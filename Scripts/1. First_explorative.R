@@ -51,4 +51,14 @@ First_explorative_P1 <- SW_sum |>
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-print(First_explorative_P1)
+First_explorative_P1
+
+#'Pie chart of relative observation per species
+First_explorative_P2 <-SW_sum |>
+  ggplot( aes(x = "", y = Total_observations, fill = englishName)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  labs(title = "Species observations (Pie Chart)") +
+  theme_void()
+
+First_explorative_P2
