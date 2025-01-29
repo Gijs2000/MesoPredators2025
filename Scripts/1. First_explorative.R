@@ -12,6 +12,7 @@ renv::restore()
 {
   library(tidyverse)
   library(lubridate)
+  library(overlap)
 }
 
 
@@ -23,7 +24,8 @@ SW_sum <- first_data |>
   dplyr::mutate(study_area = dmy(study_area))|>
   dplyr::filter(month(study_area) %in% c(3,4,5))|>
   dplyr::group_by(scientificName) |>
-  dplyr::summarise(Total_observations = n()) |>  mutate(englishName = case_when(
+  dplyr::summarise(Total_observations = n()) |>  
+    mutate(englishName = case_when(
     scientificName == "Felis catus" ~ "Domestic_cat",
     scientificName == "Rattus norvegicus" ~ "Brown_rat",
     scientificName == "Meles meles" ~ "European_badger",
@@ -41,7 +43,26 @@ SW_sum <- first_data |>
   arrange(desc(Total_observations))
 print(SW_sum)
 
-#### First exploratory graphs ----
+first_data <- first_data |>
+  mutate(
+    TimeOfDay = (hour + minute / 60) * (2*pi/24),  # Convert hour and minute to decimal hours
+    englishName = case_when(         # Map scientific names to English names
+      scientificName == "Felis catus" ~ "Domestic_cat",
+      scientificName == "Rattus norvegicus" ~ "Brown_rat",
+      scientificName == "Meles meles" ~ "European_badger",
+      scientificName == "Vulpes vulpes" ~ "Red_fox",
+      scientificName == "Martes foina" ~ "Stone_marten",
+      scientificName == "Mustela putorius" ~ "European_polecat",
+      scientificName == "Canis lupus familiaris" ~ "Domestic_dog",
+      scientificName == "Mustela erminea" ~ "Stoat",
+      scientificName == "Mustela" ~ "Mustela",
+      scientificName == "Erinaceus europaeus" ~ "European_hedgehog",
+      scientificName == "Nyctereutes procyonoides" ~ "Common_raccoon_dog",
+      scientificName == "Mustela nivalis" ~ "Least_weasel",
+      TRUE ~ "Other"
+    )
+  )
+
 #'Histogram of total observation per species
 First_explorative_P1 <- SW_sum |>
   mutate(englishName = fct_reorder(englishName, Total_observations, .desc = TRUE)) |>
@@ -62,3 +83,33 @@ First_explorative_P2 <-SW_sum |>
   theme_void()
 
 First_explorative_P2
+
+  
+# Define the plot
+First_explorative_P3 <- NULL
+
+species_list <- unique(first_data$englishName)
+
+colors <- c("red", "blue", "green", "purple", "orange", "cyan", "yellow", "black", "pink", "brown")
+
+
+for (i in 1:length(species_list)) {
+  species <- species_list[i]
+    species_data <- first_data %>% filter(englishName == species)
+    TimeOfDay_vector <- as.numeric(species_data$TimeOfDay)
+  TimeOfDay_vector <- na.omit(TimeOfDay_vector)
+  attr(TimeOfDay_vector, "na.action") <- NULL
+    if (is.null(First_explorative_P3)) {
+    First_explorative_P3 <- densityPlot(TimeOfDay_vector, xcenter = "midnight", col = colors[i], add = FALSE)
+  } else {
+    First_explorative_P3 <- densityPlot(TimeOfDay_vector, xcenter = "midnight", col = colors[i], add = TRUE)
+  }
+}
+
+legend('topleft', 
+       legend = species_list, 
+       col = colors[1:length(species_list)], 
+       bg = "white", 
+       lwd = 2, 
+       title = "Species")
+
