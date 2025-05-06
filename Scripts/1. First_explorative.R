@@ -1,6 +1,6 @@
 #' Author: Gijs van Male
 #' Startdate: 28-01-2025
-#' Supervisors: Chris Smit, Pieter Otten en Rienk Fokkema
+#' Supervisors: Chris Smit, Pieter Otte en Rienk Fokkema
 
 #' Clear the environment
 rm(list = ls())
