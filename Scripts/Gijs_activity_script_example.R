@@ -1,14 +1,19 @@
 ####### daily activity patterns ########
 
 remove(list=ls()) # clear everything in memory
-setwd("C:/data/predator activity article")
+{
+  library(tidyverse)
+  library(lubridate)
+  library(overlap)
+  library(activity)
+}
 
 library("readxl")
 library("lubridate")
 
 ### combined data of 2021_2022_2023
 
-pred.full <- read_excel("daily activity data 21_22_23.xlsx")
+pred.full <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTCFH54XPrO6JoV6RyOtOXEXiwBAjrery2YbXD_6MS57IqOI5BshBzn2rKQvmHZRA/pub?gid=975015585&single=true&output=csv")
 
 str(pred.full)
 
@@ -262,7 +267,7 @@ bootCI(catratest, catrat.b)
 # from 0: statistic W = (a1-a2)^2 / (SE1^2+SE2^2) tested on chi-sq distribution with 1 degree of
 # freedom.
 
-library("activity")
+
 
 Fox.f <- fitact(Fox.r, sample="data", reps=10)
 Badger.f <- fitact(Badger.r, sample="data", reps=10)
