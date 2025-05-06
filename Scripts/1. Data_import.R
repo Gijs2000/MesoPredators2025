@@ -42,7 +42,9 @@ observations_RM23_filtered <- observations_RM23 |>
     "observationTags",
     "observationComments",
     "classificationProbability",
-    "classificationTimestamp")
+    "classificationTimestamp",
+    "observationLevel",
+    "observationType")
   ) |>
   dplyr::mutate(
     study_year = format(eventStart, "%Y"),
@@ -81,4 +83,15 @@ deployment_RM23_filtered <- deployment_RM23 |>
     hour = format(deploymentStart, "%H"),
     minute = format(deploymentStart, "%M"),
     study_date = format(deploymentStart, "%m/%d/%Y")) |>
-dplyr::filter(study_year == "2023")
+  dplyr::filter(study_year == "2023") |>
+  dplyr::select(
+    "deploymentID",
+    "locationName",
+    "latitude",
+    "longitude",
+  )
+
+observations_RM23_filtered <- observations_RM23_filtered |>
+  dplyr::left_join(
+    deployment_RM23_filtered,
+    by = "deploymentID" )
