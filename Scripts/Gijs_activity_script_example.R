@@ -8,14 +8,14 @@ remove(list=ls()) # clear everything in memory
   library(activity)
 }
 
-library("readxl")
-library("lubridate")
+library(readxl)
+library(lubridate)
 
 ### combined data of 2021_2022_2023
 
-pred.full <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vTCFH54XPrO6JoV6RyOtOXEXiwBAjrery2YbXD_6MS57IqOI5BshBzn2rKQvmHZRA/pub?gid=975015585&single=true&output=csv")
+SW_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQBlKMSm9dDB5TPG2l7cpmG4tXDMxo8LVlPU2flR0zFZ5iVWrrA5cFDKmKv3ppmVg/pub?gid=1693148414&single=true&output=csv")
 
-str(pred.full)
+str(SW_data)
 
 #Calculate total minutes
 
