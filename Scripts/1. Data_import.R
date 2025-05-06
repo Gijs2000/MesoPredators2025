@@ -8,6 +8,7 @@
 {
   library(tidyverse)
   library(lubridate)
+  library(stringr)
 }
 # Import data ----
 # South-West Friesland data 2021,2022,2023
@@ -22,6 +23,7 @@ observations_RM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1
 str(observations_RM23)
 
 # Structure data ----
+# Structuring the observations data
 observations_RM23_filtered <- observations_RM23 |>
   dplyr:: select(-c(
     "mediaID",
@@ -45,5 +47,38 @@ observations_RM23_filtered <- observations_RM23 |>
   dplyr::mutate(
     study_year = format(eventStart, "%Y"),
     hour = format(eventStart, "%H"),
-    minute = format(eventStart, "%M")
-  )
+    minute = format(eventStart, "%M"),
+    study_date = format(eventStart, "%m/%d/%Y"),
+  ) |>
+  dplyr::filter(study_year == "2023")
+
+# Structuring the deployment data
+deployment_RM23_filtered <- deployment_RM23 |>
+  dplyr::select(-c(
+    "coordinateUncertainty",
+    "setupBy",
+    "cameraID",
+    "cameraModel",
+    "cameraDelay",
+    "cameraHeight",
+    "cameraDepth",
+    "cameraDepth",
+    "cameraTilt",
+    "cameraHeading",
+    "detectionDistance",
+    "timestampIssues",
+    "baitUse",
+    "habitat",
+    "deploymentGroups",
+    "deploymentTags",
+  )) |>
+  dplyr::mutate(
+    latitude = as.numeric(str_replace(as.character(latitude), "^(.{2})(.+)$", "\\1.\\2")),
+    longitude = as.numeric(str_replace(as.character(longitude), "^(.{1})(.+)$", "\\1.\\2")),
+  )|>
+  dplyr::mutate(
+    study_year = format(deploymentStart, "%Y"),
+    hour = format(deploymentStart, "%H"),
+    minute = format(deploymentStart, "%M"),
+    study_date = format(deploymentStart, "%m/%d/%Y")) |>
+dplyr::filter(study_year == "2023")
