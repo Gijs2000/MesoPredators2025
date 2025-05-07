@@ -16,42 +16,62 @@ observations_RM23_filtered$timerad <- (2 * pi * observations_RM23_filtered$timem
 observations_RM23_filtered$timerad
 
 
-# Reitdiep midden densityplots ----
-Fox.r <- observations_RM23_filtered$timerad[observations_RM23_filtered$scientificName == 'Vulpes vulpes']
-Fox.r <- Fox.r[!is.na(Fox.r)]
-overlap::densityPlot(Fox.r, rug=TRUE, xcenter="midnight")
+SW_data$timemin <- ((SW_data$hour*60)+(SW_data$minute))
+SW_data$timerad <- (2 * pi * SW_data$timemin) / 1440 # why was this 1439
+SW_data$timerad
 
-Cat.r <- observations_RM23_filtered$timerad[observations_RM23_filtered$scientificName %in% c('Felis', 'Felis catus')]
-Cat.r <- Cat.r[!is.na(Cat.r)]
-densityPlot(Cat.r, rug=TRUE, xcenter="midnight")
-
-Marten.r <- observations_RM23_filtered$timerad[observations_RM23_filtered$scientificName %in% c('Martes', 'Martes foina')]
-Marten.r <- Marten.r[!is.na(Marten.r)]
-densityPlot(Marten.r, rug=TRUE, xcenter="midnight")
-
-Polecat.r <- observations_RM23_filtered$timerad[observations_RM23_filtered$scientificName == 'Mustela putorius']
-Polecat.r <- Polecat.r[!is.na(Polecat.r)]
-densityPlot(Polecat.r, rug=TRUE, xcenter="midnight")
-
-Stoat.r <- observations_RM23_filtered$timerad[observations_RM23_filtered$scientificName == 'Mustela erminea']
-Stoat.r <- Stoat.r[!is.na(Stoat.r)]
-densityPlot(Stoat.r, rug=TRUE, xcenter="midnight")
-
-Weasel.r <- observations_RM23_filtered$timerad[observations_RM23_filtered$scientificName == 'Mustela nivalis']
-Weasel.r <- Weasel.r[!is.na(Weasel.r)]
-densityPlot(Weasel.r, rug=TRUE, xcenter="midnight")
-
-# Function to check what is wrong with the data ----
-checkInput <- function(y) {
-  if(!is.vector(y) || !is.numeric(y))
-    stop("The times of observations must be in a numeric vector.")
-  if(length(unique(y)) < 2)
-    stop("You have ", length(unique(y)), " different observations; at least 2 are needed to fit a density.")
-  if(any(is.na(y)))
-    stop("Your data have missing values.")
-  if(any(y < 0 | y > 2*pi))
-    stop("You have times < 0 or > 2*pi; make sure you are using radians.")
-  return(NULL)
+# Making the plot in one function ----
+plot_species_activity <- function(data, title_text = "Density plot of activity patterns", center = "midnight",
+                                  plot_order = c("Polecat", "Fox", "Marten", "Cat", "Mustela")) {
+  species_groups <- list(
+    Fox = c('Vulpes vulpes'),
+    Cat = c('Felis', 'Felis catus'),
+    Marten = c('Martes', 'Martes foina'),
+    Polecat = c('Mustela putorius'),
+    Stoat = c('Mustela erminea'),
+    Weasel = c('Mustela nivalis'),
+    Mustela = c('Mustela', 'Mustela putorius', 'Mustela erminea', 'Mustela nivalis')
+  )
+  
+  plot_colors <- c(
+    Polecat = "black",
+    Fox = "red",
+    Marten = "blue",
+    Cat = "orange",
+    Mustela = "purple"
+  )
+  
+  # Extract activity times
+  species_data <- lapply(species_groups, function(names) {
+    r <- data$timerad[data$scientificName %in% names]
+    r[!is.na(r)]
+  })
+  
+  # Filter plot_order to species with valid data
+  plot_order <- plot_order[plot_order %in% names(species_data)]
+  plot_order <- plot_order[sapply(species_data[plot_order], length) > 1]
+  
+  # Plot first species
+  first_sp <- plot_order[1]
+  densityPlot(species_data[[first_sp]], extend = NULL, lwd = 5, xcenter = center,
+              rug = TRUE, main = NULL, col = plot_colors[first_sp])
+  
+  # Add remaining species
+  for (sp in plot_order[-1]) {
+    densityPlot(species_data[[sp]], add = TRUE, lwd = 5, rug = TRUE, col = plot_colors[sp], xcenter = center)
+  }
+  
+  legend("topleft", legend = plot_order, col = plot_colors[plot_order], lty = 1, lwd = 5)
+  title(title_text, cex.main = 1.5)
 }
-checkInput(Fox.r)
+
+
+plot_species_activity(observations_RM23_filtered,
+                      title_text = "Reitdiep Midden 2023 Activity",
+                      plot_order = c("Polecat", "Fox","Marten", "Mustela", "Cat"))
+plot_species_activity(SW_data,
+                      title_text = "Zuid-West Friesland 2023 Activity",
+                      plot_order = c("Marten", "Fox","Polecat", "Mustela", "Cat"))
+
+
 
