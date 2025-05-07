@@ -12,7 +12,7 @@
 }
 # Import data ----
 # South-West Friesland data 2021,2022,2023
-SW_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQBlKMSm9dDB5TPG2l7cpmG4tXDMxo8LVlPU2flR0zFZ5iVWrrA5cFDKmKv3ppmVg/pub?gid=1693148414&single=true&output=csv")
+SW_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQCffd_hF8DAKakdt3iZ1964ah6yMfGvn_c4h4peIMucmPVG6vlqxZAVMfdmpsU9w/pub?gid=259764214&single=true&output=csv")
 str(SW_data)
 
 # Reitdiep midden data 2023
@@ -48,8 +48,8 @@ observations_RM23_filtered <- observations_RM23 |>
   ) |>
   dplyr::mutate(
     study_year = format(eventStart, "%Y"),
-    hour = format(eventStart, "%H"),
-    minute = format(eventStart, "%M"),
+    hour = as.numeric(format(eventStart, "%H")),
+    minute = as.numeric(format(eventStart, "%M")),
     study_date = format(eventStart, "%m/%d/%Y"),
   ) |>
   dplyr::filter(study_year == "2023")
