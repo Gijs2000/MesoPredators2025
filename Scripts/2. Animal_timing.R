@@ -118,3 +118,16 @@ dev.off()
 
 
 
+
+# Statistics RM----
+## Fox and cat
+overlapPlot(RM_Fox.r, RM_Cat.r, xcenter = "midnight", 
+            linetype = c(1, 1), linecol = c("red", "blue"), linewidth = c(2, 2))
+legend('topright', c("Fox", "Cat"), lty=c(1,1), col=c("red", "blue"), bty='n')
+foxcatest <- overlapEst(RM_Fox.r, RM_Cat.r, type="Dhat4")
+foxcatest
+
+foxcat.b <- bootstrap(Fox.r, RM_Cat.r, 1000, type="Dhat4") # takes a few seconds
+mean(foxcat.b)
+
+bootCI(foxcatest, foxcat.b, conf=0.95)
