@@ -9,21 +9,7 @@
   library(tidyverse)
 }
 
-# Setting times correctly to Radians ----
-# Reitdiep Midden
-observations_RM23_filtered$timemin <- ((observations_RM23_filtered$hour*60)+(observations_RM23_filtered$minute))
-observations_RM23_filtered$timerad <- (2 * pi * observations_RM23_filtered$timemin) / 1440 # why was this 1439
-observations_RM23_filtered$timerad
 
-#Zuid-West Friesland
-SW_data$timemin <- ((SW_data$hour*60)+(SW_data$minute))
-SW_data$timerad <- (2 * pi * SW_data$timemin) / 1440 # why was this 1439
-SW_data$timerad
-
-# Soarremoarre
-observations_SM23_filtered$timemin <- ((observations_SM23_filtered$hour*60)+(observations_SM23_filtered$minute))
-observations_SM23_filtered$timerad <- (2 * pi * observations_SM23_filtered$timemin) / 1440 # why was this 1439
-observations_SM23_filtered$timerad
 
 # Plotting the activity patterns of different species RM----
 #Density plots per species
@@ -168,6 +154,51 @@ densityPlot(SM_Rodent.r, add=TRUE, lwd=5, rug=TRUE, col='yellow', xcenter="m")
 
 legend("topleft", c("Polecat", "Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "blue", "orange", "purple", "yellow"), lty = 1, lwd = 5, cex = 2.5)
 title("Density plot of activity patterns of different species in the Soarremoarre area (2023)", cex.main=2.5)
+dev.off()
+# Plotting the activity patterns of different species all areas together----
+#Density plots per species
+combi_Fox.r <- combined_data$timerad[combined_data$scientificName == 'Vulpes vulpes']
+combi_Fox.r <- combi_Fox.r[!is.na(combi_Fox.r)]
+overlap::densityPlot(combi_Fox.r, rug=TRUE, xcenter="midnight") #Only 1 observation so ignore
+
+combi_Cat.r <- combined_data$timerad[combined_data$scientificName %in% c('Felis', 'Felis catus')]
+combi_Cat.r <- combi_Cat.r[!is.na(combi_Cat.r)]
+densityPlot(combi_Cat.r, rug=TRUE, xcenter="midnight")
+
+combi_Marten.r <- combined_data$timerad[combined_data$scientificName %in% c('Martes', 'Martes foina')]
+combi_Marten.r <- combi_Marten.r[!is.na(combi_Marten.r)]
+densityPlot(combi_Marten.r, rug=TRUE, xcenter="midnight")
+
+combi_Polecat.r <- combined_data$timerad[combined_data$scientificName == 'Mustela putorius']
+combi_Polecat.r <- combi_Polecat.r[!is.na(combi_Polecat.r)]
+densityPlot(combi_Polecat.r, rug=TRUE, xcenter="midnight")
+
+combi_Stoat.r <- combined_data$timerad[combined_data$scientificName == 'Mustela erminea']
+combi_Stoat.r <- combi_Stoat.r[!is.na(combi_Stoat.r)]
+densityPlot(combi_Stoat.r, rug=TRUE, xcenter="midnight")
+
+combi_Weasel.r <- combined_data$timerad[combined_data$scientificName == 'Mustela nivalis']
+combi_Weasel.r <- combi_Weasel.r[!is.na(combi_Weasel.r)]
+densityPlot(combi_Weasel.r, rug=TRUE, xcenter="midnight")
+
+combi_Mustela.r <- combined_data$timerad[combined_data$scientificName %in% c('Mustela', 'Mustela putorius', 'Mustela erminea', "Mustela nivalis", "Mustela nivalis/erminea")]
+combi_Mustela.r <- combi_Mustela.r[!is.na(combi_Mustela.r)]
+densityPlot(combi_Mustela.r, rug=TRUE, xcenter="midnight")
+
+combi_Rodent.r <- combined_data$timerad[combined_data$scientificName %in% c('Rattus rattus', 'Rodentia', 'Rattus norvegicus')]
+combi_Rodent.r <- combi_Rodent.r[!is.na(combi_Rodent.r)]
+densityPlot(combi_Rodent.r, rug=TRUE, xcenter="midnight")
+
+#Combining Species in one graph
+png("Figures/2.Animal_activity_combi.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+densityPlot(combi_Marten.r, , lwd=5, rug=TRUE, col='blue', xcenter="m", main = NULL)
+densityPlot(combi_Polecat.r, extend=NULL, lwd=5, xcenter = "m", rug = TRUE,add=TRUE)
+densityPlot(combi_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='orange', xcenter="m")
+densityPlot(combi_Mustela.r, add=TRUE, lwd=5, rug=TRUE, col='purple', xcenter="m")
+densityPlot(combi_Rodent.r, add=TRUE, lwd=5, rug=TRUE, col='yellow', xcenter="m")
+densityPlot(combi_Fox.r, add=TRUE, lwd=5, rug=TRUE, col='red', xcenter="m" )
+legend("topleft", c("Polecat", "Fox","Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "red","blue", "orange", "purple", "yellow"), lty = 1, lwd = 5, cex = 2.5)
+title("Density plot of activity patterns of different species in the three areas combined (2023)", cex.main=2.5)
 dev.off()
 # Statistics RM----
 ## Fox and cat
