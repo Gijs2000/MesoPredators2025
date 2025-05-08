@@ -19,6 +19,7 @@ observations_RM23_filtered$timerad
 SW_data$timemin <- ((SW_data$hour*60)+(SW_data$minute))
 SW_data$timerad <- (2 * pi * SW_data$timemin) / 1440 # why was this 1439
 SW_data$timerad
+
 # Plotting the activity patterns of different species RM----
 #Density plots per species
 Fox.r <- observations_RM23_filtered$timerad[observations_RM23_filtered$scientificName == 'Vulpes vulpes']
@@ -62,6 +63,7 @@ title("Density plot of activity patterns of different species in the Reitdiep Mi
 
 # Saving the plot
 dev.off()
+
 
 
 
