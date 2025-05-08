@@ -10,7 +10,7 @@
 }
 
 # Setting times correctly to Radians ----
-# Reitdiep Middeb
+# Reitdiep Midden
 observations_RM23_filtered$timemin <- ((observations_RM23_filtered$hour*60)+(observations_RM23_filtered$minute))
 observations_RM23_filtered$timerad <- (2 * pi * observations_RM23_filtered$timemin) / 1440 # why was this 1439
 observations_RM23_filtered$timerad
@@ -19,6 +19,11 @@ observations_RM23_filtered$timerad
 SW_data$timemin <- ((SW_data$hour*60)+(SW_data$minute))
 SW_data$timerad <- (2 * pi * SW_data$timemin) / 1440 # why was this 1439
 SW_data$timerad
+
+# Soarremoarre
+observations_SM23_filtered$timemin <- ((observations_SM23_filtered$hour*60)+(observations_SM23_filtered$minute))
+observations_SM23_filtered$timerad <- (2 * pi * observations_SM23_filtered$timemin) / 1440 # why was this 1439
+observations_SM23_filtered$timerad
 
 # Plotting the activity patterns of different species RM----
 #Density plots per species
@@ -55,7 +60,7 @@ RM_Rodent.r <- RM_Rodent.r[!is.na(RM_Rodent.r)]
 densityPlot(RM_Rodent.r, rug=TRUE, xcenter="midnight")
 
 #Combining Species in one graph
-png("Figures/2.Animal_activity_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+# png("Figures/2.Animal_activity_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 densityPlot(RM_Polecat.r, extend=NULL, lwd=5, xcenter = "m", rug = TRUE, main = NULL)
 densityPlot(RM_Fox.r, add=TRUE, lwd=5, rug=TRUE, col='red', xcenter="m" )
 densityPlot(RM_Marten.r, add=TRUE, lwd=5, rug=TRUE, col='blue', xcenter="m")
@@ -102,7 +107,7 @@ SW_Rodent.r <- SW_Rodent.r[!is.na(SW_Rodent.r)]
 densityPlot(SW_Rodent.r, rug=TRUE, xcenter="midnight")
 
 #Combining Species in one graph
-png("Figures/2.Animal_activity_SW.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/2.Animal_activity_SW.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 densityPlot(SW_Rodent.r,extend=NULL , lwd=5, rug=TRUE, col='yellow', xcenter="m",main = NULL)
 densityPlot(SW_Polecat.r,add=TRUE , lwd=5, xcenter = "m", rug = TRUE, )
 densityPlot(SW_Fox.r, add=TRUE, lwd=5, rug=TRUE, col='red', xcenter="m" )
@@ -119,6 +124,51 @@ dev.off()
 
 
 
+# Plotting the activity patterns of different species SM----
+#Density plots per species
+SM_Fox.r <- observations_SM23_filtered$timerad[observations_SM23_filtered$scientificName == 'Vulpes vulpes']
+SM_Fox.r <- SM_Fox.r[!is.na(SM_Fox.r)]
+overlap::densityPlot(SM_Fox.r, rug=TRUE, xcenter="midnight") #Only 1 observation so ignore
+
+SM_Cat.r <- observations_SM23_filtered$timerad[observations_SM23_filtered$scientificName %in% c('Felis', 'Felis catus')]
+SM_Cat.r <- SM_Cat.r[!is.na(SM_Cat.r)]
+densityPlot(SM_Cat.r, rug=TRUE, xcenter="midnight")
+
+SM_Marten.r <- observations_SM23_filtered$timerad[observations_SM23_filtered$scientificName %in% c('Martes', 'Martes foina')]
+SM_Marten.r <- SM_Marten.r[!is.na(SM_Marten.r)]
+densityPlot(SM_Marten.r, rug=TRUE, xcenter="midnight")
+
+SM_Polecat.r <- observations_SM23_filtered$timerad[observations_SM23_filtered$scientificName == 'Mustela putorius']
+SM_Polecat.r <- SM_Polecat.r[!is.na(SM_Polecat.r)]
+densityPlot(SM_Polecat.r, rug=TRUE, xcenter="midnight")
+
+SM_Stoat.r <- observations_SM23_filtered$timerad[observations_SM23_filtered$scientificName == 'Mustela erminea']
+SM_Stoat.r <- SM_Stoat.r[!is.na(SM_Stoat.r)]
+densityPlot(SM_Stoat.r, rug=TRUE, xcenter="midnight")
+
+SM_Weasel.r <- observations_SM23_filtered$timerad[observations_SM23_filtered$scientificName == 'Mustela nivalis']
+SM_Weasel.r <- SM_Weasel.r[!is.na(SM_Weasel.r)]
+densityPlot(SM_Weasel.r, rug=TRUE, xcenter="midnight")
+
+SM_Mustela.r <- observations_SM23_filtered$timerad[observations_SM23_filtered$scientificName %in% c('Mustela', 'Mustela putorius', 'Mustela erminea', "Mustela nivalis", "Mustela nivalis/erminea")]
+SM_Mustela.r <- SM_Mustela.r[!is.na(SM_Mustela.r)]
+densityPlot(SM_Mustela.r, rug=TRUE, xcenter="midnight")
+
+SM_Rodent.r <- observations_SM23_filtered$timerad[observations_SM23_filtered$scientificName %in% c('Rattus rattus', 'Rodentia', 'Rattus norvegicus')]
+SM_Rodent.r <- SM_Rodent.r[!is.na(SM_Rodent.r)]
+densityPlot(SM_Rodent.r, rug=TRUE, xcenter="midnight")
+
+#Combining Species in one graph
+ png("Figures/2.Animal_activity_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+densityPlot(SM_Polecat.r, extend=NULL, lwd=5, xcenter = "m", rug = TRUE, main = NULL)
+densityPlot(SM_Marten.r, add=TRUE, lwd=5, rug=TRUE, col='blue', xcenter="m")
+densityPlot(SM_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='orange', xcenter="m")
+densityPlot(SM_Mustela.r, add=TRUE, lwd=5, rug=TRUE, col='purple', xcenter="m")
+densityPlot(SM_Rodent.r, add=TRUE, lwd=5, rug=TRUE, col='yellow', xcenter="m")
+
+legend("topleft", c("Polecat", "Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "blue", "orange", "purple", "yellow"), lty = 1, lwd = 5, cex = 2.5)
+title("Density plot of activity patterns of different species in the Soarremoarre area (2023)", cex.main=2.5)
+dev.off()
 # Statistics RM----
 ## Fox and cat
 overlapPlot(RM_Fox.r, RM_Cat.r, xcenter = "midnight", 
