@@ -55,7 +55,7 @@ RM_Rodent.r <- RM_Rodent.r[!is.na(RM_Rodent.r)]
 densityPlot(RM_Rodent.r, rug=TRUE, xcenter="midnight")
 
 #Combining Species in one graph
-#png("Figures/2.Animal_activity_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+png("Figures/2.Animal_activity_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 densityPlot(RM_Polecat.r, extend=NULL, lwd=5, xcenter = "m", rug = TRUE, main = NULL)
 densityPlot(RM_Fox.r, add=TRUE, lwd=5, rug=TRUE, col='red', xcenter="m" )
 densityPlot(RM_Marten.r, add=TRUE, lwd=5, rug=TRUE, col='blue', xcenter="m")
@@ -63,8 +63,8 @@ densityPlot(RM_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='orange', xcenter="m")
 densityPlot(RM_Mustela.r, add=TRUE, lwd=5, rug=TRUE, col='purple', xcenter="m")
 densityPlot(RM_Rodent.r, add=TRUE, lwd=5, rug=TRUE, col='yellow', xcenter="m")
 
-legend("topleft", c("Polecat", "Fox", "Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "red", "blue", "orange", "purple", "yellow"), lty = 1, lwd = 5)
-title("Density plot of activity patterns of different species in the Reitdiep Midden area (2023)", cex.main=1.5)
+legend("topleft", c("Polecat", "Fox", "Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "red", "blue", "orange", "purple", "yellow"), lty = 1, lwd = 5, cex = 2.5)
+title("Density plot of activity patterns of different species in the Reitdiep Midden area (2023)", cex.main=2.5)
 dev.off()
 
 # Plotting the activity patterns of different species SW----
@@ -110,8 +110,8 @@ densityPlot(SW_Marten.r, add=TRUE, lwd=5, rug=TRUE, col='blue', xcenter="m")
 densityPlot(SW_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='orange', xcenter="m")
 densityPlot(SW_Mustela.r, add=TRUE, lwd=5, rug=TRUE, col='purple', xcenter="m")
 
-legend("topleft", c("Polecat", "Fox", "Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "red", "blue", "orange", "purple", "yellow"), lty = 1, lwd = 5)
-title("Density plot of activity patterns of different species in the Zuid-West Friesland area (2023)", cex.main=1.5)
+legend("topleft", c("Polecat", "Fox", "Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "red", "blue", "orange", "purple", "yellow"), lty = 1, lwd = 5, cex = 2.5)
+title("Density plot of activity patterns of different species in the Zuid-West Friesland area (2023)", cex.main=2.5)
 dev.off()
 
 
