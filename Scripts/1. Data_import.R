@@ -12,7 +12,8 @@
 }
 # Import data ----
 # South-West Friesland data 2021,2022,2023
-SW_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQCffd_hF8DAKakdt3iZ1964ah6yMfGvn_c4h4peIMucmPVG6vlqxZAVMfdmpsU9w/pub?gid=259764214&single=true&output=csv")
+SW_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQCffd_hF8DAKakdt3iZ1964ah6yMfGvn_c4h4peIMucmPVG6vlqxZAVMfdmpsU9w/pub?gid=259764214&single=true&output=csv") |>
+  mutate(study_date = mdy(study_date))
 str(SW_data)
 
 # Reitdiep midden data 2023
@@ -58,7 +59,9 @@ observations_RM23_filtered <- observations_RM23 |>
     minute = as.numeric(format(eventStart, "%M")),
     study_date = format(eventStart, "%m/%d/%Y"),
   ) |>
-  dplyr::filter(study_year == "2023")
+  dplyr::filter(study_year == "2023") |>
+  mutate(study_date = mdy(study_date),
+         study_year = as.numeric(study_year))
 
 # Structuring the deployment data
 deployment_RM23_filtered <- deployment_RM23 |>
@@ -96,6 +99,7 @@ deployment_RM23_filtered <- deployment_RM23 |>
     "latitude",
     "longitude",
   )
+  
 
 observations_RM23_filtered <- observations_RM23_filtered |>
   dplyr::left_join(
@@ -132,7 +136,9 @@ observations_SM23_filtered <- observations_SM23 |>
     minute = as.numeric(format(eventStart, "%M")),
     study_date = format(eventStart, "%m/%d/%Y"),
   ) |>
-  dplyr::filter(study_year == "2023")
+  dplyr::filter(study_year == "2023") |>
+  mutate(study_date = mdy(study_date),
+         study_year = as.numeric(study_year))
 
 # Structuring the deployment data
 deployment_SM23_filtered <- deployment_SM23 |>
@@ -177,6 +183,32 @@ observations_SM23_filtered <- observations_SM23_filtered |>
   dplyr::left_join(
     deployment_SM23_filtered,
     by = "deploymentID" )
+# Setting times correctly to Radians ----
+# Reitdiep Midden
+observations_RM23_filtered$timemin <- ((observations_RM23_filtered$hour*60)+(observations_RM23_filtered$minute))
+observations_RM23_filtered$timerad <- (2 * pi * observations_RM23_filtered$timemin) / 1440 # why was this 1439
+observations_RM23_filtered$timerad
+
+#Zuid-West Friesland
+SW_data$timemin <- ((SW_data$hour*60)+(SW_data$minute))
+SW_data$timerad <- (2 * pi * SW_data$timemin) / 1440 # why was this 1439
+SW_data$timerad
+
+# Soarremoarre
+observations_SM23_filtered$timemin <- ((observations_SM23_filtered$hour*60)+(observations_SM23_filtered$minute))
+observations_SM23_filtered$timerad <- (2 * pi * observations_SM23_filtered$timemin) / 1440 # why was this 1439
+observations_SM23_filtered$timerad
+# Combining the three areas in one dataset ----
+columns_to_keep <- c(
+  "deploymentID", "scientificName", "study_year", "hour", "minute", 
+  "study_date", "locationName", "latitude", "longitude", "timemin", "timerad"
+)
+
+combined_data <- bind_rows(
+  observations_RM23_filtered |> dplyr::select(all_of(columns_to_keep)),
+  observations_SM23_filtered |> dplyr::select(all_of(columns_to_keep)),
+  SW_data |> dplyr::select(all_of(columns_to_keep))
+)
 
 # Short overview of the data ----
 
@@ -256,3 +288,18 @@ SM_summary <- observations_SM23_filtered |>
   )|>
   dplyr::arrange(desc(n))
 SM_summary
+
+Combo_summary <- combined_data |>
+  dplyr::filter(scientificName %in% RM_species_of_interest) |>
+  dplyr::select(
+    "deploymentID",
+    "locationName",
+    "scientificName",
+  ) |>
+  dplyr::group_by(scientificName) |>
+  dplyr::summarise(
+    n = n(),
+    .groups = 'drop'
+  )|>
+  dplyr::arrange(desc(n))
+Combo_summary
