@@ -10,16 +10,17 @@
 }
 
 # Setting times correctly to Radians ----
-
+# Reitdiep Middeb
 observations_RM23_filtered$timemin <- ((observations_RM23_filtered$hour*60)+(observations_RM23_filtered$minute))
 observations_RM23_filtered$timerad <- (2 * pi * observations_RM23_filtered$timemin) / 1440 # why was this 1439
 observations_RM23_filtered$timerad
 
-# Plotting the activity patterns of different species ----
+#Zuid-West Friesland
 SW_data$timemin <- ((SW_data$hour*60)+(SW_data$minute))
 SW_data$timerad <- (2 * pi * SW_data$timemin) / 1440 # why was this 1439
 SW_data$timerad
-
+# Plotting the activity patterns of different species RM----
+#Density plots per species
 Fox.r <- observations_RM23_filtered$timerad[observations_RM23_filtered$scientificName == 'Vulpes vulpes']
 Fox.r <- Fox.r[!is.na(Fox.r)]
 overlap::densityPlot(Fox.r, rug=TRUE, xcenter="midnight")
@@ -48,7 +49,8 @@ Mustela.r <- observations_RM23_filtered$timerad[observations_RM23_filtered$scien
 Mustela.r <- Mustela.r[!is.na(Mustela.r)]
 densityPlot(Mustela.r, rug=TRUE, xcenter="midnight")
 
-# Prettier plots:
+#Combining Species in one graph
+png("Figures/2.Animal_activity_RM.png", width = 1920, height = 1080)
 densityPlot(Polecat.r, extend=NULL, lwd=5, xcenter = "m", rug = TRUE, main = NULL)
 densityPlot(Fox.r, add=TRUE, lwd=5, rug=TRUE, col='red', xcenter="m" )
 densityPlot(Marten.r, add=TRUE, lwd=5, rug=TRUE, col='blue', xcenter="m")
@@ -57,7 +59,10 @@ densityPlot(Mustela.r, add=TRUE, lwd=5, rug=TRUE, col='purple', xcenter="m")
 
 legend("topleft", c("Polecat", "Fox", "Marten", "Cat", "Mustela"), col=c("black", "red", "blue", "orange", "purple"), lty = 1, lwd = 5)
 title("Density plot of activity patterns of different species in the Reitdiep Midden area (2023)", cex.main=1.5)
-png("2.Animal_activity_RM.png", width = 1920, height = 1080)
+
+# Saving the plot
+dev.off()
+
 
 
 
