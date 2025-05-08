@@ -95,3 +95,63 @@ observations_RM23_filtered <- observations_RM23_filtered |>
   dplyr::left_join(
     deployment_RM23_filtered,
     by = "deploymentID" )
+
+# Short overview of the data ----
+# Zuid-West Friesland
+SW_summary <- SW_data |>
+  dplyr::filter(study_year == "2023") |>
+  dplyr::select(
+    "deploymentID",
+    "locationName",
+    "scientificName",
+    "eventStart",
+    "eventEnd",
+  ) |>
+  dplyr::group_by(scientificName) |>
+  dplyr::summarise(
+    n = n(),
+    .groups = 'drop'
+  )|>
+  dplyr::arrange(desc(n))
+SW_summary
+
+# Reitdiep Midden
+# Species of interest
+RM_species_of_interest <- c(
+  "Vulpes vulpes",
+  "Rodentia",
+  "Martes",
+  "Felis",
+  "Felis catus",
+  "Mustela putorius",
+  "Mustela erminea",
+  "Rattus rattus",
+  "Martes foina",
+  "Erinaceus europaeus",
+  "Canis lupus familiaris",
+  "canis familiaris",
+  "Mustelidae",
+  "Mustela nivalis/erminea",
+  "Canis lupus",
+  "Mustela nivalis",
+  "Mustela",
+  "Procyon lotor",
+  "Rattus norvegicus"
+)
+
+RM_summary <- observations_RM23_filtered |>
+  dplyr::filter(scientificName %in% RM_species_of_interest) |>
+  dplyr::select(
+    "deploymentID",
+    "locationName",
+    "scientificName",
+    "eventStart",
+    "eventEnd",
+  ) |>
+  dplyr::group_by(scientificName) |>
+  dplyr::summarise(
+    n = n(),
+    .groups = 'drop'
+  )|>
+  dplyr::arrange(desc(n))
+RM_summary
