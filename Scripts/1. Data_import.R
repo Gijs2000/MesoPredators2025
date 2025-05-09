@@ -215,7 +215,8 @@ combined_data <- bind_rows(
   observations_RM23_filtered |> dplyr::select(all_of(columns_to_keep)),
   observations_SM23_filtered |> dplyr::select(all_of(columns_to_keep)),
   SW_data |> dplyr::select(all_of(columns_to_keep))
-)
+) |>
+  dplyr::filter(study_year == "2023")
 
 # Short overview of the data ----
 
@@ -296,7 +297,7 @@ SM_summary <- observations_SM23_filtered |>
   dplyr::arrange(desc(n))
 SM_summary
 
-Combo_summary <- combined_data |>
+Combi_summary <- combined_data |>
   dplyr::filter(scientificName %in% RM_species_of_interest) |>
   dplyr::select(
     "deploymentID",
