@@ -13,21 +13,27 @@
 # Import data ----
 # South-West Friesland data 2021,2022,2023
 SW_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQCffd_hF8DAKakdt3iZ1964ah6yMfGvn_c4h4peIMucmPVG6vlqxZAVMfdmpsU9w/pub?gid=259764214&single=true&output=csv") |>
-  mutate(study_date = mdy(study_date))
+  dplyr::mutate(study_date = mdy(study_date),
+                eventStart = with_tz(ymd_hms(eventStart), tzone = "Europe/Amsterdam"),
+                eventEnd = with_tz(ymd_hms(eventEnd), tzone = "Europe/Amsterdam"))
 str(SW_data)
 
 # Reitdiep midden data 2023
 deployment_RM23 <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRnjFiCxcIg4z3je-0_CCcTDMa6uMVjccCJNoJ9LfRDrQUHTuZG610T1HfIutepjw/pub?output=csv")
 str(deployment_RM23)
 
-observations_RM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1vRZdYiSTRKrAdmdOUnb-r_tscKRueVX2cUdxvu3PShekqh5mZd2wl5EetNs0a4IrQ/pub?gid=1367235605&single=true&output=csv")
+observations_RM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1vRZdYiSTRKrAdmdOUnb-r_tscKRueVX2cUdxvu3PShekqh5mZd2wl5EetNs0a4IrQ/pub?gid=1367235605&single=true&output=csv") |>
+  dplyr::mutate(eventStart = with_tz(ymd_hms(eventStart), tzone = "Europe/Amsterdam"),
+                eventEnd = with_tz(ymd_hms(eventEnd), tzone = "Europe/Amsterdam"))
 str(observations_RM23)
 
 # Soarremoarre data 2023
 deployment_SM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1vS6uwGxVTcQZ2IzUkw7V59lQgWpCEqwYdQNHW7_6vLIofVs6ZAfRUJyc1tcInd4Cw/pub?gid=1033951230&single=true&output=csv")
 str(deployment_SM23)
 
-observations_SM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSi1yTINru3K_xom415DDZ8P-Su8Gm69DV6Kdtz0QrrJuBLt6X9_CX_SQ2vuV9A/pub?gid=799909957&single=true&output=csv")
+observations_SM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSi1yTINru3K_xom415DDZ8P-Su8Gm69DV6Kdtz0QrrJuBLt6X9_CX_SQ2vuV9A/pub?gid=799909957&single=true&output=csv") |>
+  dplyr::mutate(eventStart = with_tz(ymd_hms(eventStart), tzone = "Europe/Amsterdam"),
+                eventEnd = with_tz(ymd_hms(eventEnd), tzone = "Europe/Amsterdam"))
 str(observations_SM23)
 # Structure data ----
 # Structuring the observations data RM----
@@ -198,6 +204,7 @@ SW_data$timerad
 observations_SM23_filtered$timemin <- ((observations_SM23_filtered$hour*60)+(observations_SM23_filtered$minute))
 observations_SM23_filtered$timerad <- (2 * pi * observations_SM23_filtered$timemin) / 1440 # why was this 1439
 observations_SM23_filtered$timerad
+
 # Combining the three areas in one dataset ----
 columns_to_keep <- c(
   "deploymentID", "scientificName", "study_year", "hour", "minute", 
