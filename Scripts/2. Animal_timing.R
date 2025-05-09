@@ -46,7 +46,7 @@ RM_Rodent.r <- RM_Rodent.r[!is.na(RM_Rodent.r)]
 densityPlot(RM_Rodent.r, rug=TRUE, xcenter="midnight")
 
 #Combining Species in one graph
-# png("Figures/2.Animal_activity_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/2.Animal_activity_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 densityPlot(RM_Polecat.r, extend=NULL, lwd=5, xcenter = "m", rug = TRUE, main = NULL)
 densityPlot(RM_Fox.r, add=TRUE, lwd=5, rug=TRUE, col='red', xcenter="m" )
 densityPlot(RM_Marten.r, add=TRUE, lwd=5, rug=TRUE, col='blue', xcenter="m")
@@ -145,7 +145,7 @@ SM_Rodent.r <- SM_Rodent.r[!is.na(SM_Rodent.r)]
 densityPlot(SM_Rodent.r, rug=TRUE, xcenter="midnight")
 
 #Combining Species in one graph
- png("Figures/2.Animal_activity_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+# png("Figures/2.Animal_activity_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 densityPlot(SM_Polecat.r, extend=NULL, lwd=5, xcenter = "m", rug = TRUE, main = NULL)
 densityPlot(SM_Marten.r, add=TRUE, lwd=5, rug=TRUE, col='blue', xcenter="m")
 densityPlot(SM_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='orange', xcenter="m")
@@ -190,7 +190,7 @@ combi_Rodent.r <- combi_Rodent.r[!is.na(combi_Rodent.r)]
 densityPlot(combi_Rodent.r, rug=TRUE, xcenter="midnight")
 
 #Combining Species in one graph
-png("Figures/2.Animal_activity_combi.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/2.Animal_activity_combi.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 densityPlot(combi_Marten.r, , lwd=5, rug=TRUE, col='blue', xcenter="m", main = NULL)
 densityPlot(combi_Polecat.r, extend=NULL, lwd=5, xcenter = "m", rug = TRUE,add=TRUE)
 densityPlot(combi_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='orange', xcenter="m")
