@@ -228,3 +228,76 @@ corrplot(SW_cor_matrix,
          diag = F)             # hide diagonal
 title("Correlation matrix of animals activity in the Zuid-West Friesland area (2023)", cex.main=1.5)
 dev.off()
+
+# Setting up a presence/absence matrix Combi----
+Combi_correlation_species <- c(
+  "Vulpes vulpes",
+  "Rodentia",
+  "Martes",
+  "Felis",
+  "Felis catus",
+  "Mustela putorius",
+  "Mustela erminea",
+  "Rattus rattus",
+  "Martes foina",
+  "Mustelidae",
+  "Mustela nivalis/erminea",
+  "Mustela nivalis",
+  "Mustela",
+  "Rattus norvegicus"
+)
+
+Combi_order <- c(
+  "Vulpes vulpes",
+  "Felis catus",
+  "Mustela",
+  "Rodentia",
+  "Mustela erminea",
+  "Mustela nivalis",
+  "Mustela putorius",
+  "Martes foina",
+  "Mustelidae"
+)
+
+Combi_matrix <- combined_data |>
+  dplyr::filter(scientificName %in% Combi_correlation_species) |>
+  dplyr::mutate(
+    scientificName = dplyr::case_when(
+      scientificName == "Mustela nivalis/erminea" ~ "Mustela",
+      scientificName == "Martes" ~ "Martes foina",
+      scientificName == "Felis" ~ "Felis catus",
+      scientificName == "Rattus rattus" ~ "Rodentia",
+      scientificName == "Rattus norvegicus" ~ "Rodentia",
+      TRUE ~ scientificName
+    )
+  ) |>
+  dplyr::mutate (present = 1) |>
+  dplyr::distinct(study_date, locationName, scientificName, .keep_all = TRUE) |> #Not sure if this step is correct
+  dplyr::select(study_date, locationName, scientificName, present) |>
+  pivot_wider(names_from = scientificName, 
+              values_from = present, 
+              values_fill = list(present = 0)) |>
+  dplyr::select(all_of(Combi_order)) |>
+  as.matrix()
+
+# Correlation tests SM----
+Combi_cor_results <- rcorr(Combi_matrix, type = "spearman") #should be kendall?
+Combi_cor_matrix <- Combi_cor_results$r
+Combi_p_matrix <- Combi_cor_results$P
+
+png("Figures/3.Animal_correlation_Combi.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+corrplot(Combi_cor_matrix,
+         method = "circle",        # circles for correlation
+         type = "upper",           # upper triangle only
+         order = "original",       # keep your order
+         col = colorRampPalette(c("red", "white", "blue"))(200),  # color gradient
+         p.mat = Combi_p_matrix,         # significance matrix
+         sig.level = 0.05,         # threshold for significance
+         insig = "pch",            # draw something for insignificant correlations
+         pch.col = "black",        # color of cross
+         pch.cex = 2,              # size of cross
+         tl.cex = 0.8,             # text size
+         tl.col = "black",         # label color
+         diag = F)             # hide diagonal
+title("Correlation matrix of animals activity in the three areas combined (2023)", cex.main=1.5)
+dev.off()
