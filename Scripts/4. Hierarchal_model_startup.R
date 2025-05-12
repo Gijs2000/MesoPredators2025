@@ -5,10 +5,6 @@
 #' For reference: https://hms-activity.netlify.app/
 
 # Loading libraries ----
-list.of.packages <- c("dplyr", "grid", "gridExtra", "GLMMadaptive", "ggpubr", "mgcv", 
-                      "tidyr", "lubridate", "lmtest", "activity", "overlap", "circular", 
-                      "nimble", "brms", "forcats", "MESS", "suncalc", "grateful"
-)
 {
   library(tidyverse)
   library(grid)
@@ -174,7 +170,7 @@ pl_hor
 
 # Join plots
 pl <- grid.arrange(pl_vert, pl_hor, ncol = 2)
-# Unimodal pattern ----
+# Unimodal pattern vertical----
 p_df<-data.frame()
 for(i in 1:7){
  p_df<-rbind(p_df, 
@@ -235,3 +231,64 @@ pl_vert_uni <- ggplot(p_df, aes(x = time, y = p, group = curvesID)) +
                linewidth = 1, color = "orange", linejoin = "mitre")+
   scale_x_continuous(breaks=seq(0,24,length.out=7), labels=seq(0,24,4)) 
 pl_vert_uni
+
+# Unimodal pattern horiozntal ----
+p_df<-data.frame()
+for(i in 1:7){
+  p_df<-rbind(p_df, 
+              data.frame(p = plogis(b0 + b1*cos(2*pi*time/(24)+theta0 + gamma_i[i]) +  tau_i[4]),
+                         time = time, 
+                         curvesID = rep(as.factor(i), length(time))
+              )
+  )
+}
+p_df$curvesLeg = as.factor(rep(c("+/- 0.5 SD", "+/- 1 SD", "+/- 1.5 SD", "Conditional", "+/- 0.5 SD", "+/- 1 SD", "+/- 1.5 SD"), 
+                               each = length(time)
+)
+)
+p_df$mean <- c(rep(rep("off", length(time)),3), rep("on", length(time)), rep(rep("off", length(time)),3))
+
+# calculate the marginal mean activity curve by integrating over the distribution of the random effects
+p_marg <- matrix(NA,length(time), 1)
+for(i in 1:length(time)){
+  intfun<-function(gamma_x){
+    plogis(b0 + b1*cos(2*pi*time[i]/(24)+ theta0 + gamma_x) +tau_i[4]
+    ) * dnorm(gamma_x, mean = 0, sd = 1)
+  }
+  p_marg[i]<-integrate(intfun,-Inf, Inf)[1]
+}
+p_df2 <- data.frame(p = unlist(p_marg),
+                    time = time,
+                    mean = "on", 
+                    curvesID = as.factor(8),
+                    curvesLeg = as.factor("Marginal")
+)
+p_df <- rbind(p_df, p_df2)
+
+# plot
+pl_hor_uni <- ggplot(p_df, aes(x = time, y = p, group = curvesID)) +
+  geom_line(aes(color = curvesLeg, linewidth = mean, linetype = mean)) +
+  scale_color_manual(values = c("grey40", "grey60", "grey80", "red", "black")) +
+  scale_linewidth_manual(values = c(0.5, 1.5)) +
+  scale_linetype_manual(values = c(2, 1)) +
+  labs(x = "Time of Day", y = "Activity Patterns", title = "B) Variability in timing of activity") +
+  theme_minimal()+
+  theme(legend.position = "none", 
+        axis.line = element_line(colour = 'black', linetype = 'solid'),
+        axis.ticks.x = element_line(colour = 'black', linetype = 'solid'),
+        axis.text.y = element_blank(), #element_text(size=8),
+        axis.title=element_text(size=10,face="bold"),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank()
+  ) +
+  geom_segment(aes(x=13.5 - 0.75, y=max(p) + 0.02, xend=13.5 - 7, yend=max(p) + 0.02), arrow=arrow(length= unit(0.5, "cm")), 
+               linewidth = 1, color = "orange", linejoin = "mitre") +
+  geom_segment(aes(x=13.5 + 0.75, y=max(p) + 0.02, xend=13.5 + 7, yend=max(p) + 0.02), arrow=arrow(length= unit(0.5, "cm")), 
+               linewidth = 1, color = "orange", linejoin = "mitre") +
+  scale_x_continuous(breaks=seq(0,24,length.out=7), labels=seq(0,24,4)) +
+  guides(linetype=element_blank())
+pl_hor_uni
+
+pl_uni <- grid.arrange(pl_vert_uni, pl_hor_uni, ncol = 2)
+
+# 
