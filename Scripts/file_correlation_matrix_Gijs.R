@@ -6,7 +6,7 @@ remove(list=ls()) # clear everything in memory
 library("readxl")
 
 
-total_data2 <- read_excel("data_predator_sum_21_22_23_updated.xlsx")
+total_data2 <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRuAE_lROi_EU3TI0xCeDVbtMHH7m_tx8mp3VFnHKdZiozx588NqbxFp5kpU2lVGw/pub?gid=1667442230&single=true&output=csv")
 str(total_data2)
 total_data<-subset(SW_data, (locationName!= "ZWF 031"))
 total_data

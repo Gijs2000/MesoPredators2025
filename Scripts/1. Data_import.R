@@ -310,4 +310,4 @@ Combi_summary <- combined_data |>
     .groups = 'drop'
   )|>
   dplyr::arrange(desc(n))
-Combo_summary
+Combi_summary
