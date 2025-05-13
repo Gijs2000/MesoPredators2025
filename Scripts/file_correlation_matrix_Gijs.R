@@ -5,12 +5,10 @@
 remove(list=ls()) # clear everything in memory
 library("readxl")
 
-#set workdrive. update accordingly to name of your folder location
-setwd("C:/data/food webs article 2024 V3")
 
 total_data2 <- read_excel("data_predator_sum_21_22_23_updated.xlsx")
 str(total_data2)
-total_data<-subset(total_data2, (locationName!= "ZWF 031"))
+total_data<-subset(SW_data, (locationName!= "ZWF 031"))
 total_data
 str(total_data)
 
