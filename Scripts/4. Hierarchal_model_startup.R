@@ -402,3 +402,132 @@ occasions_cbind <- y_long %>%
   dplyr::rename(Site = id,
                 Time = hour)
 knitr::kable(head(occasions_cbind))
+
+# run model
+trig_rand_int <- mixed_model(fixed = cbind(success, failure) ~ 
+                               cos(2 * pi * Time/24)  + sin(2 * pi * Time/24) +
+                               cos(2 * pi * Time/12)  + sin(2 * pi * Time/12),
+                             random = ~  1  |   Site, 
+                             data = occasions_cbind, 
+                             family = binomial(), 
+                             iter_EM = 0
+)
+summary(trig_rand_int)
+
+# estimated activity pattern
+newdat <- with(occasions_cbind, expand.grid(Time = seq(min(Time), 24, length.out = 48)))
+cond_eff0 <- effectPlotData(trig_rand_int, newdat, marginal = FALSE) %>% 
+  mutate(pred = plogis(pred),
+         low = plogis(low),
+         upp = plogis(upp),
+         Mod = "Estimated: Random Intercept-only")
+
+# simulated conditional activity pattern
+cond_true <- dat$Conditional %>% 
+  mutate(low = NA,
+         upp = NA,
+         Mod = "Simulated Conditional") %>% 
+  dplyr::rename(Time = time, pred = p) %>% 
+  select(Time, pred, low, upp, Mod)
+
+# combine the two for visualization  purposes
+cond_eff <- rbind(cond_true, cond_eff0)
+
+# plot
+(pl_trig1 <- ggplot(cond_eff, aes(Time, pred)) +
+    geom_ribbon(aes(ymin = low, ymax = upp, color = Mod, fill = Mod), alpha = 0.3, linewidth = 0.25) + 
+    geom_line(aes(color = Mod), linewidth = 1) + #
+    scale_color_manual(values = c("blue", "red")) +
+    scale_fill_manual(values = c("blue", "red")) +
+    labs(x = "Time of Day (Hour)", y = "Predicted Activity Pattern \n (probability)", title = "Estimated vs Simulated Activity Patterns")+
+    theme_minimal()+
+    theme(legend.position = "bottom",
+          legend.title = element_blank(),
+          legend.text = element_text(size=10,face="bold"),
+          legend.margin=margin(0,0,0,0),
+          legend.box.margin=margin(-5,-10,-10,-10),
+          plot.title = element_text(size=10,face="bold"),
+          axis.line = element_line(colour = 'black', linetype = 'solid'),
+          axis.ticks = element_line(colour = 'black', linetype = 'solid'),
+          axis.title = element_text(size=9,face="bold"),
+          panel.grid.minor.y = element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.major.x = element_line(colour = 'lightgrey', linetype = 'dashed', linewidth=0.5),
+          panel.grid.minor.x = element_blank(),
+          strip.text = element_text(size = 9, colour = "black", face = "bold", hjust = 0),
+          plot.margin = margin(0.1,0.1,0.5,0.1, "cm"))+
+    scale_x_continuous(breaks=seq(0,23,length.out=7), labels=seq(0,24,4)))
+# run model
+#trig_rand_slope <- mixed_model(fixed = cbind(success, failure) ~ 
+                                 #cos(2 * pi * Time/24)  + sin(2 * pi * Time/24) +
+                                 #cos(2 * pi * Time/12)  + sin(2 * pi * Time/12),
+                               #random = ~  cos(2 * pi * Time/24)  + sin(2 * pi * Time/24) +
+                                # cos(2 * pi * Time/12)  + sin(2 * pi * Time/12)  ||   Site,
+                               #data = occasions_cbind, 
+                               #family = binomial(), 
+                               #iter_EM = 0) #TAKES REALLY LONG
+
+summary(trig_rand_slope)
+
+# HGAM ----
+# run model
+cycl_rand_int <- bam(cbind(success, failure) ~ s(Time, bs = "cc", k = 12) + 
+                       s(Site, bs="re"), 
+                     family = "binomial", 
+                     data = occasions_cbind, 
+                     knots = list(Time=c(0,23))
+) 
+summary(cycl_rand_int)
+# build estimated activity curves
+newdat <- with(occasions_cbind, 
+               expand.grid(Time = seq(min(Time), max(Time), 1),
+                           Site = "A1") #Site doesn't matter
+) 
+temp <- predict.bam(cycl_rand_int, newdata = newdat,  exclude = "s(Site)", se.fit = TRUE, type = "response") 
+cycl_pred <- newdat  %>% 
+  mutate(pred = temp$fit,
+         low = pred - 1.96*temp$se.fit,
+         upp = pred + 1.96*temp$se.fit,
+         Mod = "Estimated: Random Intercept-only") %>% 
+  select(-Site)
+
+# combine true and estimated curves for visualization  purposes
+cond_eff <- rbind(cond_true, cycl_pred)
+# plot
+(pl_cycl1 <- ggplot(cond_eff, aes(Time, pred)) +
+    geom_ribbon(aes(ymin = low, ymax = upp, color = Mod, fill = Mod), alpha = 0.3, linewidth = 0.25) + 
+    geom_line(aes(color = Mod), linewidth = 1) + 
+    scale_color_manual(values = c("blue", "red")) +
+    scale_fill_manual(values = c("blue", "red")) +
+    labs(x = "Time of Day (Hour)", y = "Predicted Activity Pattern \n (probability)", 
+         title = "Estimated vs Simulated Activity Patterns"
+    )+
+    theme_minimal()+
+    theme(legend.position = "bottom",
+          legend.title = element_blank(),
+          legend.text = element_text(size=10,face="bold"),
+          legend.margin=margin(0,0,0,0),
+          legend.box.margin=margin(-5,-10,-10,-10),
+          plot.title = element_text(size=10,face="bold"),
+          axis.line = element_line(colour = 'black', linetype = 'solid'),
+          axis.ticks = element_line(colour = 'black', linetype = 'solid'),
+          axis.title = element_text(size=9,face="bold"),
+          panel.grid.minor.y = element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.major.x = element_line(colour = 'lightgrey', linetype = 'dashed', linewidth=0.5),
+          panel.grid.minor.x = element_blank(),
+          strip.text = element_text(size = 9, colour = "black", face = "bold", hjust = 0),
+          plot.margin = margin(0.1,0.1,0.5,0.1, "cm")
+    )+
+    scale_x_continuous(breaks=seq(0,23,length.out=7), labels=seq(0,24,4))
+)
+
+# Fit model with general smoother for Time
+#cycl_rand_slope <- bam(cbind(success, failure) ~ 
+ #                        s(Time, bs = "cc", k = 12) + # general smoother
+  #                       s(Time, bs = "cc", k = 12, by = Site, m = 1) +
+   #                      s(Site, bs="re"), 
+    #                   knots = list(Time=c(0,23)),
+     #                  family = "binomial", 
+      #                 data = occasions_cbind) #TAKES REALLY long
+summary(cycl_rand_slope)
