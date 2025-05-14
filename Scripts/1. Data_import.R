@@ -360,7 +360,12 @@ SM_location <- observations_SM23_filtered |>
   dplyr::left_join(SM_down_summary, by = "locationName") |>
   dplyr::mutate(total_days = case_when(
     is.na(total_down_days) ~ 77,
-    TRUE ~ 77 - total_down_days))
+    TRUE ~ 77 - total_down_days),
+    fraction_Felis_catus = `Felis catus` / total_days,
+    fraction_Martes_foina = `Martes foina` / total_days,
+    fraction_Mustela_putorius = `Mustela putorius` / total_days,
+    fraction_Vulpes_vulpes = `Vulpes vulpes` / total_days,
+    fraction_Mustela_erminea = `Mustela erminea` / total_days)
 
 # Sum data per species per location 2023 RM ----
 RM_down_summary <- RM_down_data |>
@@ -390,4 +395,9 @@ RM_location <- observations_RM23_filtered |>
   dplyr::left_join(RM_down_summary, by = "locationName") |>
   dplyr::mutate(total_days = case_when(
     is.na(total_down_days) ~ 84,
-    TRUE ~ 84 - total_down_days))
+    TRUE ~ 84 - total_down_days),
+    fraction_Felis_catus = `Felis catus` / total_days,
+    fraction_Martes_foina = `Martes foina` / total_days,
+    fraction_Mustela_putorius = `Mustela putorius` / total_days,
+    fraction_Vulpes_vulpes = `Vulpes vulpes` / total_days,
+    fraction_Mustela_erminea = `Mustela erminea` / total_days)
