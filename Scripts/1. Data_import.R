@@ -39,12 +39,7 @@ observations_SM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1
                 eventEnd = with_tz(ymd_hms(eventEnd), tzone = "Europe/Amsterdam"))
 str(observations_SM23)
 
-SM_down_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vT25ocRok1-g2wjBhBg3DGGTmIYYYvHW9KvQoxOgLNLM84PYCrBMWpv0S0nzMo4xA/pub?gid=2002383610&single=true&output=csv") |>
-  dplyr:: mutate(
-    start_downtime = mdy(start_downtime),
-    end_downtime = mdy(end_downtime),
-    total_down_days = as.integer(end_downtime - start_downtime) + 1
-  )
+SM_down_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vT25ocRok1-g2wjBhBg3DGGTmIYYYvHW9KvQoxOgLNLM84PYCrBMWpv0S0nzMo4xA/pub?gid=2002383610&single=true&output=csv") 
 str(SM_down_data)
 
 Analysis_species <-c(
@@ -89,7 +84,8 @@ observations_RM23_filtered <- observations_RM23 |>
   ) |>
   dplyr::filter(study_year == "2023") |>
   mutate(study_date = mdy(study_date),
-         study_year = as.numeric(study_year))
+         study_year = as.numeric(study_year))|>
+  dplyr::filter(study_date >= as.Date("2023-03-02") & study_date <= as.Date("2023-05-24"))
 
 # Structuring the deployment data
 deployment_RM23_filtered <- deployment_RM23 |>
@@ -165,8 +161,9 @@ observations_SM23_filtered <- observations_SM23 |>
     study_date = format(eventStart, "%m/%d/%Y"),
   ) |>
   dplyr::filter(study_year == "2023") |>
-  mutate(study_date = mdy(study_date),
-         study_year = as.numeric(study_year))
+  dplyr::mutate(study_date = mdy(study_date),
+         study_year = as.numeric(study_year))|>
+  dplyr::filter(study_date >= as.Date("2023-03-26") & study_date <= as.Date("2023-06-10"))
 
 # Structuring the deployment data
 deployment_SM23_filtered <- deployment_SM23 |>
@@ -337,6 +334,13 @@ Combi_summary
 # Sum data per species per location 2023----
 # Sum data per species per location 2023 SM ----
 SM_down_summary <- SM_down_data |>
+  dplyr:: mutate(
+    start_downtime = mdy(start_downtime),
+    end_downtime = mdy(end_downtime),
+    start_downtime = if_else(start_downtime < as.Date("2023-03-26"), as.Date("2023-03-26"), start_downtime),
+    end_downtime = if_else(end_downtime > as.Date("2023-06-10"), as.Date("2023-06-10"), end_downtime),
+    total_down_days = pmax(as.integer(end_downtime - start_downtime) + 1,0)
+    )|>
   dplyr::group_by(locationName) |>
   dplyr::summarise(total_down_days = sum(total_down_days), .groups = "drop")
 
@@ -352,7 +356,38 @@ SM_location <- observations_SM23_filtered |>
   dplyr::distinct(scientificName, locationName, study_date) |>
   dplyr::group_by(locationName, scientificName) |>
   dplyr::summarise(days_detected = n(), .groups = "drop") |>
-  pivot_wider(names_from = scientificName, values_from = days_detected, values_fill = 0)
+  pivot_wider(names_from = scientificName, values_from = days_detected, values_fill = 0)|>
+  dplyr::left_join(SM_down_summary, by = "locationName") |>
+  dplyr::mutate(total_days = case_when(
+    is.na(total_down_days) ~ 77,
+    TRUE ~ 77 - total_down_days))
 
-SM_location <- SM_location |>
-  left_join(SM_down_summary, by = "locationName")
+# Sum data per species per location 2023 RM ----
+RM_down_summary <- RM_down_data |>
+  dplyr:: mutate(
+    start_downtime = dmy(start_downtime),
+    end_downtime = dmy(end_downtime),
+    start_downtime = if_else(start_downtime < as.Date("2023-03-02"), as.Date("2023-03-02"), start_downtime),
+    end_downtime = if_else(end_downtime > as.Date("2023-05-24"), as.Date("2023-05-24"), end_downtime),
+    total_down_days = pmax(as.integer(end_downtime - start_downtime) + 1,0)
+  ) |>
+  dplyr::group_by(locationName) |>
+  dplyr::summarise(total_down_days = sum(total_down_days), .groups = "drop")
+
+RM_location <- observations_RM23_filtered |>
+  dplyr::filter(!is.na(scientificName),
+                scientificName %in% Analysis_species) |>
+  dplyr::  mutate(
+    scientificName = case_when(
+      scientificName == "Felis" ~ "Felis catus",
+      scientificName == "Martes" ~ "Martes foina",
+      TRUE ~ scientificName
+    )) |>
+  dplyr::distinct(scientificName, locationName, study_date) |>
+  dplyr::group_by(locationName, scientificName) |>
+  dplyr::summarise(days_detected = n(), .groups = "drop") |>
+  pivot_wider(names_from = scientificName, values_from = days_detected, values_fill = 0)|>
+  dplyr::left_join(RM_down_summary, by = "locationName") |>
+  dplyr::mutate(total_days = case_when(
+    is.na(total_down_days) ~ 84,
+    TRUE ~ 84 - total_down_days))
