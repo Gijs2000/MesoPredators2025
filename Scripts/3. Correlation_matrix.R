@@ -7,7 +7,6 @@
 {
   library(overlap)
   library(corrplot)
-  library(Hmisc)
 }
 
 #Function for correlation significance testing ----
@@ -26,7 +25,7 @@ cor.mtest <- function(mat, ...) {
   p.mat
 }
 
-# Correlation matrix SM Rienk's way ----
+# Correlation matrix SM ----
 SM_cor_df <- SM_location |>
   dplyr::select(fraction_Felis_catus, 
                 fraction_Martes_foina,
@@ -52,7 +51,7 @@ corrplot(res_SM,
          mar = c(0, 0, 2, 0))
 dev.off()
 
-# Correlation matrix RM Rienk's way ----
+# Correlation matrix RM ----
 RM_cor_df <- RM_location |>
   dplyr::select(fraction_Felis_catus, 
                 fraction_Martes_foina,
