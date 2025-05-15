@@ -301,3 +301,51 @@ corrplot(Combi_cor_matrix,
          diag = F)             # hide diagonal
 title("Correlation matrix of animals activity in the three areas combined (2023)", cex.main=1.5)
 dev.off()
+
+#Function for correlation significance testing ----
+cor.mtest <- function(mat, ...) {
+  mat <- as.matrix(mat)
+  n <- ncol(mat)
+  p.mat<- matrix(NA, n, n)
+  diag(p.mat) <- 0
+  for (i in 1:(n - 1)) {
+    for (j in (i + 1):n) {
+      tmp <- cor.test(mat[, i], mat[, j], ...)
+      p.mat[i, j] <- p.mat[j, i] <- tmp$p.value
+    }
+  }
+  colnames(p.mat) <- rownames(p.mat) <- colnames(mat)
+  p.mat
+}
+
+# Correlation matrix SM Rienk's way ----
+SM_cor_df <- SM_location |>
+  dplyr::select(fraction_Felis_catus, 
+                fraction_Martes_foina,
+                fraction_Mustela_putorius,
+                fraction_Vulpes_vulpes,
+                fraction_Mustela_erminea)
+
+res_SM <- cor(SM_cor_df)
+
+
+p.mat_SM <- cor.mtest(SM_cor_df, method = "kendall")
+
+corrplot(res_SM, type="upper", order="hclust", 
+         p.mat = p.mat_SM, sig.level = 0.05)
+
+# Correlation matrix RM Rienk's way ----
+RM_cor_df <- RM_location |>
+  dplyr::select(fraction_Felis_catus, 
+                fraction_Martes_foina,
+                fraction_Mustela_putorius,
+                fraction_Vulpes_vulpes,
+                fraction_Mustela_erminea)
+
+res_RM <- cor(RM_cor_df)
+
+
+p.mat_RM <- cor.mtest(res_RM, method = "kendall")
+
+corrplot(res_RM, type="upper", order="hclust", 
+         p.mat = p.mat_RM, sig.level = 0.05)
