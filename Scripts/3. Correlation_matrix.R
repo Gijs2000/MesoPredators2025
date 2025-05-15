@@ -10,298 +10,6 @@
   library(Hmisc)
 }
 
-# Setting up a presence/absence matrix RM----
-RM_correlation_species <- c(
-  "Vulpes vulpes",
-  "Rodentia",
-  "Martes",
-  "Felis",
-  "Felis catus",
-  "Mustela putorius",
-  "Mustela erminea",
-  "Rattus rattus",
-  "Martes foina",
-  "Mustelidae",
-  "Mustela nivalis/erminea",
-  "Mustela nivalis",
-  "Mustela",
-  "Rattus norvegicus"
-)
-
-RM_order <- c(
-  "Vulpes vulpes",
-  "Felis catus",
-  "Mustela",
-  "Rodentia",
-  "Mustela erminea",
-  "Mustela nivalis",
-  "Mustela putorius",
-  "Martes foina",
-  "Mustelidae"
-)
-
-RM_matrix <- observations_RM23_filtered |>
-  dplyr::filter(scientificName %in% RM_correlation_species) |>
-  dplyr::mutate(
-    scientificName = dplyr::case_when(
-      scientificName == "Mustela nivalis/erminea" ~ "Mustela",
-      scientificName == "Martes" ~ "Martes foina",
-      scientificName == "Felis" ~ "Felis catus",
-      scientificName == "Rattus rattus" ~ "Rodentia",
-      scientificName == "Rattus norvegicus" ~ "Rodentia",
-      TRUE ~ scientificName
-    )
-  ) |>
-  dplyr::mutate (present = 1) |>
-  dplyr::distinct(study_date, locationName, scientificName, .keep_all = TRUE) |> #Not sure if this step is correct
-  dplyr::select(study_date, locationName, scientificName, present) |>
-  pivot_wider(names_from = scientificName, 
-              values_from = present, 
-              values_fill = list(present = 0)) |>
-  dplyr::select(all_of(RM_order)) |>
-  as.matrix()
-
-# Correlation tests RM----
-RM_cor_results <- rcorr(RM_matrix, type = "spearman") #should be kendall?
-RM_cor_matrix <- RM_cor_results$r
-RM_p_matrix <- RM_cor_results$P
-
-png("Figures/3.Animal_correlation_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
-corrplot(RM_cor_matrix,
-         method = "circle",        # circles for correlation
-         type = "upper",           # upper triangle only
-         order = "original",       # keep your order
-         col = colorRampPalette(c("red", "white", "blue"))(200),  # color gradient
-         p.mat = RM_p_matrix,         # significance matrix
-         sig.level = 0.05,         # threshold for significance
-         insig = "pch",            # draw something for insignificant correlations
-         pch.col = "black",        # color of cross
-         pch.cex = 2,              # size of cross
-         tl.cex = 0.8,             # text size
-         tl.col = "black",         # label color
-         diag = F)             # hide diagonal
-title("Correlation matrix of animals activity in the Reitdiep Midden area (2023)", cex.main=1.5)
-dev.off()
-# Setting up a presence/absence matrix SM----
-SM_correlation_species <- c(
-  "Vulpes vulpes",
-  "Rodentia",
-  "Martes",
-  "Felis",
-  "Felis catus",
-  "Mustela putorius",
-  "Mustela erminea",
-  "Rattus rattus",
-  "Martes foina",
-  "Mustelidae",
-  "Mustela nivalis/erminea",
-  "Mustela nivalis",
-  "Mustela",
-  "Rattus norvegicus"
-)
-
-SM_order <- c(
-  "Vulpes vulpes",
-  "Felis catus",
-  "Mustela",
-  "Rodentia",
-  "Mustela erminea",
-  "Mustela nivalis",
-  "Mustela putorius",
-  "Martes foina",
-  "Mustelidae"
-)
-
-SM_matrix <- observations_SM23_filtered |>
-  dplyr::filter(scientificName %in% SM_correlation_species) |>
-  dplyr::mutate(
-    scientificName = dplyr::case_when(
-      scientificName == "Mustela nivalis/erminea" ~ "Mustela",
-      scientificName == "Martes" ~ "Martes foina",
-      scientificName == "Felis" ~ "Felis catus",
-      scientificName == "Rattus rattus" ~ "Rodentia",
-      scientificName == "Rattus norvegicus" ~ "Rodentia",
-      TRUE ~ scientificName
-    )
-  ) |>
-  dplyr::mutate (present = 1) |>
-  dplyr::distinct(study_date, locationName, scientificName, .keep_all = TRUE) |> #Not sure if this step is correct
-  dplyr::select(study_date, locationName, scientificName, present) |>
-  pivot_wider(names_from = scientificName, 
-              values_from = present, 
-              values_fill = list(present = 0)) |>
-  dplyr::select(all_of(SM_order)) |>
-  as.matrix()
-
-# Correlation tests SM----
-SM_cor_results <- rcorr(SM_matrix, type = "spearman") #should be kendall?
-SM_cor_matrix <- SM_cor_results$r
-SM_p_matrix <- SM_cor_results$P
-
-#png("Figures/3.Animal_correlation_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
-corrplot(SM_cor_matrix,
-         method = "circle",        # circles for correlation
-         type = "upper",           # upper triangle only
-         order = "original",       # keep your order
-         col = colorRampPalette(c("red", "white", "blue"))(200),  # color gradient
-         p.mat = SM_p_matrix,         # significance matrix
-         sig.level = 0.05,         # threshold for significance
-         insig = "pch",            # draw something for insignificant correlations
-         pch.col = "black",        # color of cross
-         pch.cex = 2,              # size of cross
-         tl.cex = 0.8,             # text size
-         tl.col = "black",         # label color
-         diag = F)             # hide diagonal
-title("Correlation matrix of animals activity in the Soarremoarre area (2023)", cex.main=1.5)
-dev.off()
-
-
-# Setting up a presence/absence matrix SW----
-SW_correlation_species <- c(
-  "Vulpes vulpes",
-  "Rodentia",
-  "Martes",
-  "Felis",
-  "Felis catus",
-  "Mustela putorius",
-  "Mustela erminea",
-  "Rattus rattus",
-  "Martes foina",
-  "Mustelidae",
-  "Mustela nivalis/erminea",
-  "Mustela nivalis",
-  "Mustela",
-  "Rattus norvegicus"
-)
-
-SW_order <- c(
-  "Vulpes vulpes",
-  "Felis catus",
-  "Mustela",
-  "Rodentia",
-  "Mustela erminea",
-  "Mustela nivalis",
-  "Mustela putorius",
-  "Martes foina"
-)
-
-SW_matrix <- SW_data |>
-  dplyr::filter(scientificName %in% SM_correlation_species,
-                study_year == 2023) |>
-  dplyr::mutate(
-    scientificName = dplyr::case_when(
-      scientificName == "Mustela nivalis/erminea" ~ "Mustela",
-      scientificName == "Martes" ~ "Martes foina",
-      scientificName == "Felis" ~ "Felis catus",
-      scientificName == "Rattus rattus" ~ "Rodentia",
-      scientificName == "Rattus norvegicus" ~ "Rodentia",
-      TRUE ~ scientificName
-    )
-  ) |>
-  dplyr::mutate (present = 1) |>
-  dplyr::distinct(study_date, locationName, scientificName, .keep_all = TRUE) |> #Not sure if this step is correct
-  dplyr::select(study_date, locationName, scientificName, present) |>
-  pivot_wider(names_from = scientificName, 
-              values_from = present, 
-              values_fill = list(present = 0)) |>
-  dplyr::select(all_of(SW_order)) |>
-  as.matrix()
-
-# Correlation tests SW----
-SW_cor_results <- rcorr(SW_matrix, type = "spearman") #should be kendall?
-SW_cor_matrix <- SW_cor_results$r
-SW_p_matrix <- SW_cor_results$P
-
-#png("Figures/3.Animal_correlation_SW.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
-corrplot(SW_cor_matrix,
-         method = "circle",        # circles for correlation
-         type = "upper",           # upper triangle only
-         order = "original",       # keep your order
-         col = colorRampPalette(c("red", "white", "blue"))(200),  # color gradient
-         p.mat = SW_p_matrix,         # significance matrix
-         sig.level = 0.05,         # threshold for significance
-         insig = "pch",            # draw something for insignificant correlations
-         pch.col = "black",        # color of cross
-         pch.cex = 2,              # size of cross
-         tl.cex = 0.8,             # text size
-         tl.col = "black",         # label color
-         diag = F)             # hide diagonal
-title("Correlation matrix of animals activity in the Zuid-West Friesland area (2023)", cex.main=1.5)
-dev.off()
-
-# Setting up a presence/absence matrix Combi----
-Combi_correlation_species <- c(
-  "Vulpes vulpes",
-  "Rodentia",
-  "Martes",
-  "Felis",
-  "Felis catus",
-  "Mustela putorius",
-  "Mustela erminea",
-  "Rattus rattus",
-  "Martes foina",
-  "Mustelidae",
-  "Mustela nivalis/erminea",
-  "Mustela nivalis",
-  "Mustela",
-  "Rattus norvegicus"
-)
-
-Combi_order <- c(
-  "Vulpes vulpes",
-  "Felis catus",
-  "Mustela",
-  "Rodentia",
-  "Mustela erminea",
-  "Mustela nivalis",
-  "Mustela putorius",
-  "Martes foina",
-  "Mustelidae"
-)
-
-Combi_matrix <- combined_data |>
-  dplyr::filter(scientificName %in% Combi_correlation_species) |>
-  dplyr::mutate(
-    scientificName = dplyr::case_when(
-      scientificName == "Mustela nivalis/erminea" ~ "Mustela",
-      scientificName == "Martes" ~ "Martes foina",
-      scientificName == "Felis" ~ "Felis catus",
-      scientificName == "Rattus rattus" ~ "Rodentia",
-      scientificName == "Rattus norvegicus" ~ "Rodentia",
-      TRUE ~ scientificName
-    )
-  ) |>
-  dplyr::mutate (present = 1) |>
-  dplyr::distinct(study_date, locationName, scientificName, .keep_all = TRUE) |> #Not sure if this step is correct
-  dplyr::select(study_date, locationName, scientificName, present) |>
-  pivot_wider(names_from = scientificName, 
-              values_from = present, 
-              values_fill = list(present = 0)) |>
-  dplyr::select(all_of(Combi_order)) |>
-  as.matrix()
-
-# Correlation tests SM----
-Combi_cor_results <- rcorr(Combi_matrix, type = "spearman") #should be kendall?
-Combi_cor_matrix <- Combi_cor_results$r
-Combi_p_matrix <- Combi_cor_results$P
-
-png("Figures/3.Animal_correlation_Combi.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
-corrplot(Combi_cor_matrix,
-         method = "circle",        # circles for correlation
-         type = "upper",           # upper triangle only
-         order = "original",       # keep your order
-         col = colorRampPalette(c("red", "white", "blue"))(200),  # color gradient
-         p.mat = Combi_p_matrix,         # significance matrix
-         sig.level = 0.05,         # threshold for significance
-         insig = "pch",            # draw something for insignificant correlations
-         pch.col = "black",        # color of cross
-         pch.cex = 2,              # size of cross
-         tl.cex = 0.8,             # text size
-         tl.col = "black",         # label color
-         diag = F)             # hide diagonal
-title("Correlation matrix of animals activity in the three areas combined (2023)", cex.main=1.5)
-dev.off()
-
 #Function for correlation significance testing ----
 cor.mtest <- function(mat, ...) {
   mat <- as.matrix(mat)
@@ -327,12 +35,22 @@ SM_cor_df <- SM_location |>
                 fraction_Mustela_erminea)
 
 res_SM <- cor(SM_cor_df)
-
+colnames(res_SM) <- rownames(res_SM) <- species_labels
 
 p.mat_SM <- cor.mtest(SM_cor_df, method = "kendall")
+colnames(p.mat_SM) <- rownames(p.mat_SM) <- species_labels
 
-corrplot(res_SM, type="upper", order="hclust", 
-         p.mat = p.mat_SM, sig.level = 0.05)
+#png("Figures/3.Correlation_matrix_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+corrplot(res_SM, 
+         type = "upper", 
+         order = "alphabet", 
+         p.mat = p.mat_SM, 
+         sig.level = 0.05,
+         tl.col = "black",
+         tl.cex = 0.9,
+         title = "Correlation Between Species in the Soarremoarre area (2023)",
+         mar = c(0, 0, 2, 0))
+dev.off()
 
 # Correlation matrix RM Rienk's way ----
 RM_cor_df <- RM_location |>
@@ -343,9 +61,19 @@ RM_cor_df <- RM_location |>
                 fraction_Mustela_erminea)
 
 res_RM <- cor(RM_cor_df)
+colnames(res_RM) <- rownames(res_RM) <- species_labels
 
+p.mat_RM <- cor.mtest(RM_cor_df, method = "kendall")
+colnames(p.mat_RM) <- rownames(p.mat_RM) <- species_labels
 
-p.mat_RM <- cor.mtest(res_RM, method = "kendall")
-
-corrplot(res_RM, type="upper", order="hclust", 
-         p.mat = p.mat_RM, sig.level = 0.05)
+#png("Figures/3.Correlation_matrix_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+corrplot(res_RM, 
+         type = "upper", 
+         order = "alphabet", 
+         p.mat = p.mat_RM, 
+         sig.level = 0.05,
+         tl.col = "black",
+         tl.cex = 0.9,
+         title = "Correlation Between Species in the Reitdiep midden area (2023)",
+         mar = c(0, 0, 2, 0))
+dev.off()
