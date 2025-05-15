@@ -7,8 +7,8 @@
 {
   library(overlap)
   library(tidyverse)
+  library(circular)
 }
-
 
 
 # Plotting the activity patterns of different species RM----
@@ -152,8 +152,8 @@ densityPlot(SM_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='orange', xcenter="m")
 densityPlot(SM_Mustela.r, add=TRUE, lwd=5, rug=TRUE, col='purple', xcenter="m")
 densityPlot(SM_Rodent.r, add=TRUE, lwd=5, rug=TRUE, col='yellow', xcenter="m")
 
-legend("topleft", c("Polecat", "Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "blue", "orange", "purple", "yellow"), lty = 1, lwd = 5, cex = 2.5)
-title("Density plot of activity patterns of different species in the Soarremoarre area (2023)", cex.main=2.5)
+legend("topleft", c("Polecat", "Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "blue", "orange", "purple", "yellow"), lty = 1, lwd = 5, cex = 0.8)
+title("Density plot of activity patterns of different species in the Soarremoarre area (2023)", cex.main=2)
 dev.off()
 # Plotting the activity patterns of different species all areas together----
 #Density plots per species
@@ -200,15 +200,42 @@ densityPlot(combi_Fox.r, add=TRUE, lwd=5, rug=TRUE, col='red', xcenter="m" )
 legend("topleft", c("Polecat", "Fox","Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "red","blue", "orange", "purple", "yellow"), lty = 1, lwd = 5, cex = 2.5)
 title("Density plot of activity patterns of different species in the three areas combined (2023)", cex.main=2.5)
 dev.off()
-# Statistics RM----
-## Fox and cat
-overlapPlot(RM_Fox.r, RM_Cat.r, xcenter = "midnight", 
-            linetype = c(1, 1), linecol = c("red", "blue"), linewidth = c(2, 2))
-legend('topright', c("Fox", "Cat"), lty=c(1,1), col=c("red", "blue"), bty='n')
-foxcatest <- overlapEst(RM_Fox.r, RM_Cat.r, type="Dhat4")
-foxcatest
+# Watson wheeler test RM----
+set.seed(42)
+watson.wheeler.test(list(RM_Fox.r, RM_Marten.r))
+watson.wheeler.test(list(RM_Fox.r, RM_Cat.r))
+watson.wheeler.test(list(RM_Fox.r, RM_Polecat.r)) #NS
+watson.wheeler.test(list(RM_Fox.r, RM_Stoat.r))
+watson.wheeler.test(list(RM_Marten.r, RM_Cat.r))
+watson.wheeler.test(list(RM_Marten.r, RM_Polecat.r)) #NS
+watson.wheeler.test(list(RM_Marten.r, RM_Stoat.r))
+watson.wheeler.test(list(RM_Cat.r, RM_Polecat.r))
+watson.wheeler.test(list(RM_Cat.r, RM_Stoat.r))
+watson.wheeler.test(list(RM_Stoat.r, RM_Polecat.r))
 
-foxcat.b <- bootstrap(Fox.r, RM_Cat.r, 1000, type="Dhat4") # takes a few seconds
-mean(foxcat.b)
+# Watson wheeler test SM----
+set.seed(42)
+watson.wheeler.test(list(SM_Fox.r, SM_Marten.r)) #NS
+watson.wheeler.test(list(SM_Fox.r, SM_Cat.r)) #NS
+watson.wheeler.test(list(SM_Fox.r, SM_Polecat.r)) #NS 
+watson.wheeler.test(list(SM_Fox.r, SM_Stoat.r)) #NS
+watson.wheeler.test(list(SM_Marten.r, SM_Cat.r))
+watson.wheeler.test(list(SM_Marten.r, SM_Polecat.r)) 
+watson.wheeler.test(list(SM_Marten.r, SM_Stoat.r))
+watson.wheeler.test(list(SM_Cat.r, SM_Polecat.r))
+watson.wheeler.test(list(SM_Cat.r, SM_Stoat.r))
+watson.wheeler.test(list(SM_Stoat.r, SM_Polecat.r))
 
-bootCI(foxcatest, foxcat.b, conf=0.95)
+# Watson wheeler test SW----
+set.seed(42)
+watson.wheeler.test(list(SW_Fox.r, SW_Marten.r))
+watson.wheeler.test(list(SW_Fox.r, SW_Cat.r))
+watson.wheeler.test(list(SW_Fox.r, SW_Polecat.r)) 
+watson.wheeler.test(list(SW_Fox.r, SW_Stoat.r))
+watson.wheeler.test(list(SW_Marten.r, SW_Cat.r))
+watson.wheeler.test(list(SW_Marten.r, SW_Polecat.r)) 
+watson.wheeler.test(list(SW_Marten.r, SW_Stoat.r))
+watson.wheeler.test(list(SW_Cat.r, SW_Polecat.r))
+watson.wheeler.test(list(SW_Cat.r, SW_Stoat.r))
+watson.wheeler.test(list(SW_Stoat.r, SW_Polecat.r))
+
