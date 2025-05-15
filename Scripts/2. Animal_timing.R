@@ -54,8 +54,8 @@ densityPlot(RM_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='orange', xcenter="m")
 densityPlot(RM_Mustela.r, add=TRUE, lwd=5, rug=TRUE, col='purple', xcenter="m")
 densityPlot(RM_Rodent.r, add=TRUE, lwd=5, rug=TRUE, col='yellow', xcenter="m")
 
-legend("topleft", c("Polecat", "Fox", "Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "red", "blue", "orange", "purple", "yellow"), lty = 1, lwd = 5, cex = 2.5)
-title("Density plot of activity patterns of different species in the Reitdiep Midden area (2023)", cex.main=2.5)
+legend("topleft", c("Polecat", "Fox", "Marten", "Cat", "Mustela", "Rodentia"), col=c("black", "red", "blue", "orange", "purple", "yellow"), lty = 1, lwd = 5, cex = 0.8)
+title("Density plot of activity patterns of different species in the Reitdiep Midden area (2023)", cex.main=2.0)
 dev.off()
 
 # Plotting the activity patterns of different species SW----
