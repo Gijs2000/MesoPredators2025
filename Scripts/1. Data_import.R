@@ -42,6 +42,7 @@ str(observations_SM23)
 SM_down_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vT25ocRok1-g2wjBhBg3DGGTmIYYYvHW9KvQoxOgLNLM84PYCrBMWpv0S0nzMo4xA/pub?gid=2002383610&single=true&output=csv") 
 str(SM_down_data)
 
+#Species of interest
 Analysis_species <-c(
   "Vulpes vulpes",
   "Martes",
@@ -401,3 +402,4 @@ RM_location <- observations_RM23_filtered |>
     fraction_Mustela_putorius = `Mustela putorius` / total_days,
     fraction_Vulpes_vulpes = `Vulpes vulpes` / total_days,
     fraction_Mustela_erminea = `Mustela erminea` / total_days)
+
