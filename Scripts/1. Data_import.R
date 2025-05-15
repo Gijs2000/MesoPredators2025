@@ -53,6 +53,11 @@ Analysis_species <-c(
   "Martes foina"
 )
 
+species_labels <- c("Domestic cat", 
+                    "Stone marten", 
+                    "European polecat",
+                    "Red fox",
+                    "Stoat")
 # Structure data ----
 # Structuring the observations data RM----
 observations_RM23_filtered <- observations_RM23 |>
