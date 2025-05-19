@@ -18,8 +18,11 @@ SW_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQCffd_hF8D
                 eventEnd = with_tz(ymd_hms(eventEnd), tzone = "Europe/Amsterdam"))
 str(SW_data)
 
+SW_days <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRqlA9LM5RvZYJfEx1jwHHQCAv84KPK0ne489TbqIinxUzZdrYIfzprowALSMPsYg/pub?gid=2023298486&single=true&output=csv")
+str(SW_days)
+
 # Reitdiep midden data 2023
-deployment_RM23 <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRnjFiCxcIg4z3je-0_CCcTDMa6uMVjccCJNoJ9LfRDrQUHTuZG610T1HfIutepjw/pub?output=csv")
+deployment_RM23 <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRnjFiCxcIg4z3je-0_CCcTDMa6uMVjccCJNoJ9LfRDrQUHTuZG610T1HfIutepjw/pub?output=csv") 
 str(deployment_RM23)
 
 observations_RM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1vRZdYiSTRKrAdmdOUnb-r_tscKRueVX2cUdxvu3PShekqh5mZd2wl5EetNs0a4IrQ/pub?gid=1367235605&single=true&output=csv") |>
@@ -408,3 +411,31 @@ RM_location <- observations_RM23_filtered |>
     fraction_Vulpes_vulpes = `Vulpes vulpes` / total_days,
     fraction_Mustela_erminea = `Mustela erminea` / total_days)
 
+
+# Sum data per species per location 2023 SW ----
+SW_days <- SW_days |>
+  dplyr::select(locationName, study_year, aantal_draaidagen)|>
+  dplyr::filter(
+    study_year == "2023")
+
+
+SW_location <- SW_data |>
+  dplyr::filter(study_year == "2023",
+                scientificName %in% Analysis_species) |>
+  dplyr::  mutate(
+    scientificName = case_when(
+      scientificName == "Felis" ~ "Felis catus",
+      scientificName == "Martes" ~ "Martes foina",
+      TRUE ~ scientificName
+    )) |>
+  dplyr::distinct(scientificName, locationName, study_date) |>
+  dplyr::group_by(locationName, scientificName) |>
+  dplyr::summarise(days_detected = n(), .groups = "drop") |>
+  pivot_wider(names_from = scientificName, values_from = days_detected, values_fill = 0)|>
+  dplyr::left_join(SW_days, by = "locationName") |>
+  dplyr::mutate(
+    fraction_Felis_catus = `Felis catus` / aantal_draaidagen,
+    fraction_Martes_foina = `Martes foina` / aantal_draaidagen,
+    fraction_Mustela_putorius = `Mustela putorius` / aantal_draaidagen,
+    fraction_Vulpes_vulpes = `Vulpes vulpes` / aantal_draaidagen,
+    fraction_Mustela_erminea = `Mustela erminea` / aantal_draaidagen)
