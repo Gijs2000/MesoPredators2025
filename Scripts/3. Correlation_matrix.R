@@ -76,3 +76,29 @@ corrplot(res_RM,
          title = "Correlation Between Species in the Reitdiep midden area (2023)",
          mar = c(0, 0, 2, 0))
 dev.off()
+
+# Correlation matrix SW ----
+SW_cor_df <- SW_location |>
+  dplyr::select(fraction_Felis_catus, 
+                fraction_Martes_foina,
+                fraction_Mustela_putorius,
+                fraction_Vulpes_vulpes,
+                fraction_Mustela_erminea)
+
+res_SW <- cor(SW_cor_df)
+colnames(res_SW) <- rownames(res_SW) <- species_labels
+
+p.mat_SW <- cor.mtest(SW_cor_df, method = "kendall")
+colnames(p.mat_SW) <- rownames(p.mat_SW) <- species_labels
+
+# png("Figures/3.Correlation_matrix_SW.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+corrplot(res_SW, 
+         type = "upper", 
+         order = "alphabet", 
+         p.mat = p.mat_RM, 
+         sig.level = 0.05,
+         tl.col = "black",
+         tl.cex = 0.9,
+         title = "Correlation Between Species in the South-West area (2023)",
+         mar = c(0, 0, 2, 0))
+dev.off()

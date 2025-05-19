@@ -112,7 +112,7 @@ densityPlot(SM_Stoat.r, rug=TRUE, xcenter="midnight")
 
 
 #Combining Species in one graph
- #png("Figures/2.Animal_activity_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/2.Animal_activity_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 densityPlot(SM_Polecat.r, lwd=5, rug=TRUE, col= "#FB8F67" ,xcenter="m", main = NULL)
 densityPlot(SM_Fox.r,  add=TRUE, lwd=5, rug=TRUE, col='#F8E16C', xcenter="m", main = NULL)
 densityPlot(SM_Marten.r, extend=NULL, lwd=5, xcenter = "m",col = "#00C49A", rug = TRUE, add = TRUE )
