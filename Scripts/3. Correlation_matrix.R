@@ -1,4 +1,4 @@
-#' Animal correlatino plots
+#' Animal correlation plots
 #' Start date: 7 may 2025
 #' Author: Gijs van Male
 #' Supervisors: Chris Smit, Rienk Fokkema, Pieter Otte
@@ -91,7 +91,7 @@ colnames(res_SW) <- rownames(res_SW) <- species_labels
 p.mat_SW <- cor.mtest(SW_cor_df, method = "kendall")
 colnames(p.mat_SW) <- rownames(p.mat_SW) <- species_labels
 
-# png("Figures/3.Correlation_matrix_SW.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/3.Correlation_matrix_SW.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 corrplot(res_SW, 
          type = "upper", 
          order = "alphabet", 
