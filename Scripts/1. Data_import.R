@@ -413,11 +413,11 @@ RM_location <- observations_RM23_filtered |>
 
 
 # Sum data per species per location 2023 SW ----
-SW_days <- SW_days |>
-  dplyr::select(locationName, study_year, aantal_draaidagen)|>
-  dplyr::filter(
-    study_year == "2023")
-
+SW_days <- SW_data |>
+  dplyr::filter(study_year == "2023") |>
+  dplyr::group_by(locationName) |>
+  dplyr::summarise(aantal_draaidagen = max(study_date) - min(study_date) + 1, .groups = "drop") |>
+  dplyr::mutate(aantal_draaidagen = as.numeric(aantal_draaidagen))
 
 SW_location <- SW_data |>
   dplyr::filter(study_year == "2023",
