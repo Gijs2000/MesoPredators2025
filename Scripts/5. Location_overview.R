@@ -19,7 +19,7 @@ SM_frac_long <- SM_location |>
 
 ggplot(SM_frac_long, aes(x = locationName, y = Species, fill = Fraction)) +
   geom_tile() +
-  scale_fill_viridis_c(limits = c(0, 0.1), oob = scales::squish) +  # clamp values > 0.2
+  scale_fill_viridis_c(limits = c(0, 0.1), oob = scales::squish) +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   labs(
