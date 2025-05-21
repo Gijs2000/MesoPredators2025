@@ -92,7 +92,7 @@ observations_RM23_filtered <- observations_RM23 |>
     study_date = format(eventStart, "%m/%d/%Y"),
   ) |>
   dplyr::filter(study_year == "2023") |>
-  mutate(study_date = mdy(study_date),
+  dplyr::mutate(study_date = mdy(study_date),
          study_year = as.numeric(study_year))|>
   dplyr::filter(study_date >= as.Date("2023-03-02") & study_date <= as.Date("2023-05-24"))
 
