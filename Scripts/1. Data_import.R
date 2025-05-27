@@ -37,7 +37,7 @@ str(RM_down_data)
 deployment_SM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1vS6uwGxVTcQZ2IzUkw7V59lQgWpCEqwYdQNHW7_6vLIofVs6ZAfRUJyc1tcInd4Cw/pub?gid=1033951230&single=true&output=csv")
 str(deployment_SM23)
 
-observations_SM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1vQmSi1yTINru3K_xom415DDZ8P-Su8Gm69DV6Kdtz0QrrJuBLt6X9_CX_SQ2vuV9A/pub?gid=799909957&single=true&output=csv") |>
+observations_SM23 <- read_csv ("https://docs.google.com/spreadsheets/d/e/2PACX-1vQa_wqg1XoVjZNUP8l8MngIMFvwCEQiaBBCr6qwWIdwz3EdVP4yxte1-gfMzv9H5Q/pub?output=csv") |>
   dplyr::mutate(eventStart = with_tz(ymd_hms(eventStart), tzone = "Europe/Amsterdam"),
                 eventEnd = with_tz(ymd_hms(eventEnd), tzone = "Europe/Amsterdam"))
 str(observations_SM23)
@@ -94,7 +94,7 @@ observations_RM23_filtered <- observations_RM23 |>
   dplyr::filter(study_year == "2023") |>
   dplyr::mutate(study_date = mdy(study_date),
          study_year = as.numeric(study_year))|>
-  dplyr::filter(study_date >= as.Date("2023-03-02") & study_date <= as.Date("2023-05-24"))
+  dplyr::filter(study_date >= as.Date("2023-03-26") & study_date <= as.Date("2023-05-24"))
 
 # Structuring the deployment data
 deployment_RM23_filtered <- deployment_RM23 |>
@@ -138,6 +138,7 @@ observations_RM23_filtered <- observations_RM23_filtered |>
   dplyr::left_join(
     deployment_RM23_filtered,
     by = "deploymentID" )
+
 
 
 # Structuring the observations data SM----
