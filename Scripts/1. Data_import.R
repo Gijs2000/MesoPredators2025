@@ -12,7 +12,7 @@
 }
 # Import data ----
 # South-West Friesland data 2021,2022,2023
-SW_data <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQCffd_hF8DAKakdt3iZ1964ah6yMfGvn_c4h4peIMucmPVG6vlqxZAVMfdmpsU9w/pub?gid=259764214&single=true&output=csv") |>
+SW_import <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQCffd_hF8DAKakdt3iZ1964ah6yMfGvn_c4h4peIMucmPVG6vlqxZAVMfdmpsU9w/pub?gid=259764214&single=true&output=csv") |>
   dplyr::mutate(study_date = mdy(study_date),
                 eventStart = with_tz(ymd_hms(eventStart), tzone = "Europe/Amsterdam"),
                 eventEnd = with_tz(ymd_hms(eventEnd), tzone = "Europe/Amsterdam"))
@@ -265,6 +265,11 @@ observations_SM23_filtered <- observations_SM23_filtered |>
 
 
 
+
+# Structurin the obsercations data SW ----
+SW_data <- SW_import |>
+  dplyr::filter(study_year == "2023",
+                study_date >= as.Date("2023-03-26") & study_date <= as.Date("2023-05-24"))
 
 # Setting times correctly to Radians ----
 # Reitdiep Midden
