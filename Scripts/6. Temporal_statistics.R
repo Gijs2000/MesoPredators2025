@@ -123,13 +123,12 @@ mean(SM_Polecat_Stoat_B)
 bootCI(SM_Polecat_Stoat, SM_Polecat_Stoat_B)
 
 #Checking for differences in activity----
-SM_Fox_Fit <- fitact(SM_Fox.r, sample="data", reps=1000)
 SM_Marten_Fit <- fitact(SM_Marten.r, sample="data", reps=1000)
 SM_Cat_Fit <- fitact(SM_Cat.r, sample="data", reps=1000)
 SM_Polecat_Fit <- fitact(SM_Polecat.r, sample="data", reps=1000)
 SM_Stoat_Fit <- fitact(SM_Stoat.r, sample="data", reps=1000)
 
-compareAct(list(SM_Fox_Fit, SM_Marten_Fit, SM_Cat_Fit, SM_Polecat_Fit, SM_Stoat_Fit))
+compareAct(list(SM_Marten_Fit, SM_Cat_Fit, SM_Polecat_Fit, SM_Stoat_Fit))
 ################### SOUTHWEST FRIESLAND ###################
 #Seeing how much overlap there is between all species combinations ----
 #'Fox and Marten
