@@ -401,7 +401,7 @@ SM_down_summary <- SM_down_data |>
     start_downtime = mdy(start_downtime),
     end_downtime = mdy(end_downtime),
     start_downtime = if_else(start_downtime < as.Date("2023-03-26"), as.Date("2023-03-26"), start_downtime),
-    end_downtime = if_else(end_downtime > as.Date("2023-06-10"), as.Date("2023-06-10"), end_downtime),
+    end_downtime = if_else(end_downtime > as.Date("2023-05-24"), as.Date("2023-05-24"), end_downtime),
     total_down_days = pmax(as.integer(end_downtime - start_downtime) + 1,0)
     )|>
   dplyr::group_by(locationName) |>
@@ -422,8 +422,8 @@ SM_location <- observations_SM23_filtered |>
   pivot_wider(names_from = scientificName, values_from = days_detected, values_fill = 0)|>
   dplyr::left_join(SM_down_summary, by = "locationName") |>
   dplyr::mutate(total_days = case_when(
-    is.na(total_down_days) ~ 77,
-    TRUE ~ 77 - total_down_days),
+    is.na(total_down_days) ~ 60,
+    TRUE ~ 60 - total_down_days),
     fraction_Felis_catus = `Felis catus` / total_days,
     fraction_Martes_foina = `Martes foina` / total_days,
     fraction_Mustela_putorius = `Mustela putorius` / total_days,
@@ -435,7 +435,7 @@ RM_down_summary <- RM_down_data |>
   dplyr:: mutate(
     start_downtime = dmy(start_downtime),
     end_downtime = dmy(end_downtime),
-    start_downtime = if_else(start_downtime < as.Date("2023-03-02"), as.Date("2023-03-02"), start_downtime),
+    start_downtime = if_else(start_downtime < as.Date("2023-03-26"), as.Date("2023-03-26"), start_downtime),
     end_downtime = if_else(end_downtime > as.Date("2023-05-24"), as.Date("2023-05-24"), end_downtime),
     total_down_days = pmax(as.integer(end_downtime - start_downtime) + 1,0)
   ) |>
@@ -457,7 +457,7 @@ RM_location <- observations_RM23_filtered |>
   pivot_wider(names_from = scientificName, values_from = days_detected, values_fill = 0)|>
   dplyr::left_join(RM_down_summary, by = "locationName") |>
   dplyr::mutate(total_days = case_when(
-    is.na(total_down_days) ~ 84,
+    is.na(total_down_days) ~ 60,
     TRUE ~ 84 - total_down_days),
     fraction_Felis_catus = `Felis catus` / total_days,
     fraction_Martes_foina = `Martes foina` / total_days,
@@ -468,14 +468,12 @@ RM_location <- observations_RM23_filtered |>
 
 # Sum data per species per location 2023 SW ----
 SW_days <- SW_data |>
-  dplyr::filter(study_year == "2023") |>
   dplyr::group_by(locationName) |>
   dplyr::summarise(aantal_draaidagen = max(study_date) - min(study_date) + 1, .groups = "drop") |>
   dplyr::mutate(aantal_draaidagen = as.numeric(aantal_draaidagen))
 
 SW_location <- SW_data |>
-  dplyr::filter(study_year == "2023",
-                scientificName %in% Analysis_species) |>
+  dplyr::filter(scientificName %in% Analysis_species) |>
   dplyr::  mutate(
     scientificName = case_when(
       scientificName == "Felis" ~ "Felis catus",
@@ -493,3 +491,4 @@ SW_location <- SW_data |>
     fraction_Mustela_putorius = `Mustela putorius` / aantal_draaidagen,
     fraction_Vulpes_vulpes = `Vulpes vulpes` / aantal_draaidagen,
     fraction_Mustela_erminea = `Mustela erminea` / aantal_draaidagen)
+
