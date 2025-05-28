@@ -132,12 +132,34 @@ deployment_RM23_filtered <- deployment_RM23 |>
     "latitude",
     "longitude",
   )
-  
+
+duplicate_delete_RM23 <- deployment_RM23 |>
+  dplyr::group_by(locationName, deploymentStart, deploymentEnd) |>
+  dplyr::filter(n() > 1) |>                       
+  dplyr::ungroup() |>
+  dplyr::semi_join(observations_RM23_filtered, by = "deploymentID") |> 
+  dplyr::count(deploymentID) |>                  
+  dplyr::left_join(
+    deployment_RM23 |>
+      dplyr::group_by(locationName, deploymentStart, deploymentEnd) |>
+      dplyr::filter(n() > 1) |>
+      dplyr::ungroup() |>
+      dplyr::select(deploymentID, locationName, deploymentStart, deploymentEnd),
+    by = "deploymentID"
+  ) |>
+  dplyr::group_by(locationName, deploymentStart, deploymentEnd) |>
+  dplyr::arrange(n, deploymentID) |>             
+  dplyr::slice(1) |>                             
+  dplyr::pull(deploymentID)
+
 
 observations_RM23_filtered <- observations_RM23_filtered |>
   dplyr::left_join(
     deployment_RM23_filtered,
-    by = "deploymentID" )
+    by = "deploymentID" )|>
+  dplyr::filter(
+    !deploymentID %in% duplicate_delete_RM23
+  )
 
 
 
@@ -173,7 +195,7 @@ observations_SM23_filtered <- observations_SM23 |>
   dplyr::filter(study_year == "2023") |>
   dplyr::mutate(study_date = mdy(study_date),
          study_year = as.numeric(study_year))|>
-  dplyr::filter(study_date >= as.Date("2023-03-26") & study_date <= as.Date("2023-06-10"))
+  dplyr::filter(study_date >= as.Date("2023-03-26") & study_date <= as.Date("2023-05-24"))
 
 # Structuring the deployment data
 deployment_SM23_filtered <- deployment_SM23 |>
@@ -213,11 +235,37 @@ deployment_SM23_filtered <- deployment_SM23 |>
     "longitude"
   ) # Warning occurs because 82 entries have an invalid data entry
 
+duplicate_delete_SM23 <- deployment_SM23 |>
+  dplyr::group_by(locationName, deploymentStart, deploymentEnd) |>
+  dplyr::filter(n() > 1) |>                       
+  dplyr::ungroup() |>
+  dplyr::semi_join(observations_RM23_filtered, by = "deploymentID") |> 
+  dplyr::count(deploymentID) |>                  
+  dplyr::left_join(
+    deployment_RM23 |>
+      dplyr::group_by(locationName, deploymentStart, deploymentEnd) |>
+      dplyr::filter(n() > 1) |>
+      dplyr::ungroup() |>
+      dplyr::select(deploymentID, locationName, deploymentStart, deploymentEnd),
+    by = "deploymentID"
+  ) |>
+  dplyr::group_by(locationName, deploymentStart, deploymentEnd) |>
+  dplyr::arrange(n, deploymentID) |>             
+  dplyr::slice(1) |>                             
+  dplyr::pull(deploymentID)
 
 observations_SM23_filtered <- observations_SM23_filtered |>
   dplyr::left_join(
     deployment_SM23_filtered,
-    by = "deploymentID" )
+    by = "deploymentID" ) |>
+  dplyr::filter(
+    !deploymentID %in% duplicate_delete_SM23
+  )
+
+
+
+
+
 # Setting times correctly to Radians ----
 # Reitdiep Midden
 observations_RM23_filtered$timemin <- ((observations_RM23_filtered$hour*60)+(observations_RM23_filtered$minute))
