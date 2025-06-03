@@ -108,12 +108,13 @@ densityPlot(SM_Stoat.r, rug=TRUE, xcenter="midnight")
 
 
 #Combining Species in one graph
-png("Figures/2.Animal_activity_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
-densityPlot(SM_Polecat.r, lwd=5, rug=TRUE, col= "#FB8F67" ,xcenter="m", main = NULL)
-densityPlot(SM_Marten.r, extend=NULL, lwd=5, xcenter = "m",col = "#00C49A", rug = TRUE, add = TRUE )
-densityPlot(SM_Stoat.r, add=TRUE, lwd=5, rug=TRUE,col='#156064', xcenter="m" )
-densityPlot(SM_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='#FFC2B4', xcenter="m")
 
+#png("Figures/2.Animal_activity_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+# First, plot the densities WITHOUT rug
+densityPlot(SM_Polecat.r, lwd=5, rug=TRUE, col="#FB8F67", xcenter="m", main=NULL)
+densityPlot(SM_Marten.r, lwd=5, rug=TRUE, add=TRUE, col="#00C49A", xcenter="m")
+densityPlot(SM_Stoat.r, lwd=5, rug=TRUE, add=TRUE, col="#156064", xcenter="m")
+densityPlot(SM_Cat.r, lwd=5, rug=TRUE, add=TRUE, col="#FFC2B4", xcenter="m")
 
 legend("topleft", c("Polecat", "Marten", "Cat", "Stoat"), col=c("#FB8F67", "#00C49A", "#FFC2B4", "#156064"), lty = 1, lwd = 5, cex = 2)
 title("Density plot of activity patterns of different species in the Soarremoarre area (2023)", cex.main=2.0)
