@@ -302,6 +302,25 @@ fit_cox_and_plot_km <- function(df, dataset_name = "unknown", add_frailty = FALS
   return(results)
 }
 
+
+extract_pvalues_with_meta <- function(results_list) {
+  purrr::map_dfr(results_list, function(dataset) {
+    purrr::map_dfr(dataset, function(result) {
+      model_df <- result$model
+      if (!is.null(model_df) && nrow(model_df) > 0) {
+        model_df %>%
+          dplyr::select(term, estimate, p.value) %>%
+          dplyr::mutate(
+            dataset = result$dataset,
+            next_species = result$next_species
+          )
+      }
+    })
+  }) %>%
+    dplyr::rename(p_value = p.value)
+}
+
+
 # putting al the data in a list
 time2event_alldata <- list(
   RM60 = RM_time2event_60,
@@ -315,9 +334,33 @@ time2event_alldata <- list(
   SW24 = SW_time2event_24
   )
 
+location_order <- c("RM60", "RM120", "RM24",
+                   "SM60", "SM120", "SM24",
+                   "SW60", "SW120", "SW24")
 # run the function over all data
-time2event_results <- imap(time2event_alldata, ~ fit_cox_and_plot_km(.x, dataset_name = .y))
+time2event_models <- purrr::imap(time2event_alldata, function(df, name) {
+  fit_cox_and_plot_km(df, dataset_name = name, return_plots = FALSE)
+})
 
-print(time2event_results$SW24$`SW24_Felis catus`$plot)
+time2event_results <- purrr::map_dfr(time2event_models, function(ds) {
+  purrr::map_dfr(ds, function(res) {
+    if (!is.null(res$model)) {
+      res$model %>%
+        select(term, estimate, p.value, next_species, dataset)
+    }
+  })
+})
 
+time2event_results <- time2event_results |>
+  mutate(first_species = str_remove(term, "^scientificName"),
+         dataset = factor(dataset, levels = location_order)) |>
+  filter(first_species != "")  
 
+ggplot(time2event_results, aes(x = first_species, y = next_species, fill = estimate)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = sprintf("%.2f\np=%.2f", estimate, p.value)), size = 3) +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0,
+                       name = "Hazard\nestimate") +
+  facet_wrap(~ dataset) +
+  labs(title = "Species Avoidance/Attraction (Cox Estimates)",
+       x = "First Detected Species", y = "Next Species Detected")
