@@ -44,8 +44,8 @@ RM_time2event_24 <- RM_time2event_data |>
   dplyr::filter(timegap_hours <= 24)
 
 #Plots RM----
-RM_time2event_data_summary <- RM_time2event_data %>%
-  group_by(focal_species = scientificName, recent_species = next_species) %>%
+RM_time2event_data_summary <- RM_time2event_data |>
+  group_by(focal_species = scientificName, recent_species = next_species) |>
   summarise(
     mean_gap_hours = mean(timegap) ,          
     sd = sd(timegap),
@@ -122,8 +122,8 @@ SM_time2event_24 <- SM_time2event_data |>
   dplyr::filter(timegap_hours <= 24)
 
 #Plots SM----
-SM_time2event_data_summary <- SM_time2event_data %>%
-  group_by(focal_species = scientificName, recent_species = next_species) %>%
+SM_time2event_data_summary <- SM_time2event_data |>
+  group_by(focal_species = scientificName, recent_species = next_species) |>
   summarise(
     mean_gap_hours = mean(timegap) ,          
     sd = sd(timegap),
@@ -200,8 +200,8 @@ SW_time2event_24 <- SW_time2event_data |>
   dplyr::filter(timegap_hours <= 24)
 
 #Plots SW----
-SW_time2event_data_summary <- SW_time2event_data %>%
-  group_by(focal_species = scientificName, recent_species = next_species) %>%
+SW_time2event_data_summary <- SW_time2event_data |>
+  group_by(focal_species = scientificName, recent_species = next_species) |>
   summarise(
     mean_gap_hours = mean(timegap) ,          
     sd = sd(timegap),
@@ -254,71 +254,67 @@ ggsurvplot_facet(
 
 # Cox-Hazard -----
 # setting up a function
-fit_cox_and_plot_km <- function(df, dataset_name = "unknown", add_frailty = FALSE, return_plots = TRUE, plot_dir = NULL) {
-  unique_species <- unique(df$next_species)
+fit_pairwise_models <- function(df, dataset_name = "unknown", add_frailty = FALSE) {
+  cat("\n=== Processing dataset:", dataset_name, "===\n")
+  print(summary(df))
   
+  all_species <- sort(unique(df$scientificName))
+  target_species <- sort(unique(df$next_species))
   results <- list()
   
-  for (target_species in unique_species) {
-    sub_df <- df %>% filter(next_species == target_species)
-    
-    
-    # Fit Cox model
-    formula <- if (add_frailty) {
-      as.formula("Surv(timegap_hours, event) ~ scientificName + frailty(locationName)")
-    } else {
-      as.formula("Surv(timegap_hours, event) ~ scientificName")
+  for (next_sp in target_species) {
+    for (first_sp in all_species) {
+      sub_df <- df |>
+        filter(next_species == next_sp) |>
+        mutate(first_species = ifelse(scientificName == first_sp, first_sp, paste0("Not_", first_sp)))
+      
+      if (length(unique(sub_df$first_species)) < 2) {
+        cat("Skipping:", first_sp, "→", next_sp, "- only one group\n")
+        next
+      }
+      
+      sub_df$first_species <- factor(sub_df$first_species, levels = c(first_sp, paste0("Not_", first_sp)))
+      
+      if (nrow(sub_df) < 4) {
+        cat("Skipping:", first_sp, "→", next_sp, "- less than 4 rows\n")
+        next
+      }
+      if (sum(sub_df$event) == 0) {
+        cat("Skipping:", first_sp, "→", next_sp, "- zero events\n")
+        next
+      }
+      
+      cat("Modeling:", dataset_name, "|", first_sp, "→", next_sp, "\n")
+      print(table(sub_df$first_species, sub_df$event))
+      
+      formula <- if (add_frailty) {
+        as.formula("Surv(timegap_hours, event) ~ first_species + frailty(locationName)")
+      } else {
+        as.formula("Surv(timegap_hours, event) ~ first_species")
+      }
+      
+      model <- try(coxph(formula, data = sub_df), silent = TRUE)
+      if (inherits(model, "try-error")) {
+        cat("Model failed for:", first_sp, "→", next_sp, "\n")
+        next
+      }
+      
+      model_summary <- broom::tidy(model, conf.int = TRUE) |>
+        filter(term == paste0("first_speciesNot_", first_sp)) |>
+        mutate(
+          next_species = next_sp,
+          first_species = first_sp,
+          dataset = dataset_name
+        )
+      
+      results[[paste(dataset_name, next_sp, first_sp, sep = "_")]] <- model_summary
     }
-    
-    model <- try(coxph(formula, data = sub_df), silent = TRUE)
-    if (inherits(model, "try-error")) next
-    
-    # Tidy model
-    model_summary <- tidy(model, conf.int = TRUE) %>%
-      mutate(next_species = target_species, dataset = dataset_name)
-    
-    # Kaplan-Meier plot
-    survfit_obj <- survfit(Surv(timegap_hours, event) ~ scientificName, data = sub_df)
-    plot_title <- paste("KM Curve:", dataset_name, "| Next:", target_species)
-    
-    km_plot <- ggsurvplot(
-      survfit_obj,
-      data = sub_df,
-      conf.int = TRUE,
-      pval = TRUE,
-      risk.table = TRUE,
-      title = plot_title,
-      ggtheme = theme_minimal()
-    )
-    
-
-    # Store results
-    results[[paste0(dataset_name, "_", target_species)]] <- list(
-      model = model_summary,
-      plot = if (return_plots) km_plot else NULL
-    )
   }
   
-  return(results)
+  bind_rows(results)
 }
 
 
-extract_pvalues_with_meta <- function(results_list) {
-  purrr::map_dfr(results_list, function(dataset) {
-    purrr::map_dfr(dataset, function(result) {
-      model_df <- result$model
-      if (!is.null(model_df) && nrow(model_df) > 0) {
-        model_df %>%
-          dplyr::select(term, estimate, p.value) %>%
-          dplyr::mutate(
-            dataset = result$dataset,
-            next_species = result$next_species
-          )
-      }
-    })
-  }) %>%
-    dplyr::rename(p_value = p.value)
-}
 
 
 # putting al the data in a list
@@ -334,33 +330,47 @@ time2event_alldata <- list(
   SW24 = SW_time2event_24
   )
 
-location_order <- c("RM60", "RM120", "RM24",
-                   "SM60", "SM120", "SM24",
-                   "SW60", "SW120", "SW24")
+time2event_order <- c("RM24", "RM120", "RM60",
+                    "SW24", "SW120", "SW60",
+                   "SM24", "SM120", "SM60"
+                   )
+
 # run the function over all data
-time2event_models <- purrr::imap(time2event_alldata, function(df, name) {
-  fit_cox_and_plot_km(df, dataset_name = name, return_plots = FALSE)
-})
+time2event_models <- purrr::imap(time2event_alldata, ~ fit_pairwise_models(.x, dataset_name = .y))
+time2event_results <- bind_rows(time2event_models) |>
+  mutate(dataset = factor(dataset, levels = location_order)) |>
+  arrange(dataset, next_species, first_species)
 
-time2event_results <- purrr::map_dfr(time2event_models, function(ds) {
-  purrr::map_dfr(ds, function(res) {
-    if (!is.null(res$model)) {
-      res$model %>%
-        select(term, estimate, p.value, next_species, dataset)
-    }
-  })
-})
+# Make a figure of this data
+species <- sort(unique(c(time2event_results$first_species, time2event_results$next_species)))
 
-time2event_results <- time2event_results |>
-  mutate(first_species = str_remove(term, "^scientificName"),
-         dataset = factor(dataset, levels = location_order)) |>
-  filter(first_species != "")  
+datasets <- unique(time2event_results$dataset)
+complete_grid <- expand_grid(
+  first_species = species_labels,
+  next_species = species_labels,
+  dataset = datasets
+)
 
-ggplot(time2event_results, aes(x = first_species, y = next_species, fill = estimate)) +
+plot_data <- complete_grid %>%
+  left_join(time2event_results, by = c("first_species", "next_species", "dataset")) %>%
+  mutate(estimate_clipped = ifelse(is.na(estimate), NA, pmax(pmin(estimate, 2), -2)))
+#png("Figures/3.Cox_hazard_tiles.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(plot_data, aes(x = first_species, y = next_species, fill = estimate_clipped)) +
   geom_tile(color = "white") +
-  geom_text(aes(label = sprintf("%.2f\np=%.2f", estimate, p.value)), size = 3) +
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0,
-                       name = "Hazard\nestimate") +
+  geom_text(aes(label = ifelse(is.na(estimate), "", sprintf("%.2f\np=%.2f", estimate, p.value))), size = 3) +
+  scale_fill_gradient2(
+    low = "blue", high = "red", mid = "white", midpoint = 0,
+    limits = c(-2, 2),
+    name = "Hazard\nestimate",
+    na.value = "black"  # <- makes missing data tiles black
+  ) +
   facet_wrap(~ dataset) +
-  labs(title = "Species Avoidance/Attraction (Cox Estimates)",
-       x = "First Detected Species", y = "Next Species Detected")
+  labs(
+    title = "Species Avoidance/Attraction (Cox Estimates)",
+    x = "First Detected Species",
+    y = "Next Species Detected"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+dev.off()
+
