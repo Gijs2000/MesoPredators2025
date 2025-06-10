@@ -253,7 +253,23 @@ ggsurvplot_facet(
 )
 
 # Cox-Hazard -----
-# setting up a function
+# Data preparation + setting up function----
+time2event_alldata <- list(
+  RM60 = RM_time2event_60,
+  RM120 = RM_time2event_120,
+  RM24 = RM_time2event_24,
+  SM60 = SM_time2event_60,
+  SM120 = SM_time2event_120,
+  SM24 = SM_time2event_24,  
+  SW60 = SW_time2event_60,
+  SW120 = SW_time2event_120,
+  SW24 = SW_time2event_24
+)
+
+time2event_order <- c("RM60", "RM120", "RM24",
+                      "SW60", "SW120", "SW24",
+                      "SM60", "SM120", "SM24"
+)
 fit_pairwise_models <- function(df, dataset_name = "unknown", add_frailty = FALSE) {
   cat("\n=== Processing dataset:", dataset_name, "===\n")
   print(summary(df))
@@ -314,50 +330,43 @@ fit_pairwise_models <- function(df, dataset_name = "unknown", add_frailty = FALS
   bind_rows(results)
 }
 
-
-
-
-# putting al the data in a list
-time2event_alldata <- list(
-  RM60 = RM_time2event_60,
-  RM120 = RM_time2event_120,
-  RM24 = RM_time2event_24,
-  SM60 = SM_time2event_60,
-  SM120 = SM_time2event_120,
-  SM24 = SM_time2event_24,  
-  SW60 = SW_time2event_60,
-  SW120 = SW_time2event_120,
-  SW24 = SW_time2event_24
-  )
-
-time2event_order <- c("RM24", "RM120", "RM60",
-                    "SW24", "SW120", "SW60",
-                   "SM24", "SM120", "SM60"
-                   )
-
-# run the function over all data
+# Run the function over all data + making grid for plotting ----
 time2event_models <- purrr::imap(time2event_alldata, ~ fit_pairwise_models(.x, dataset_name = .y))
 time2event_results <- bind_rows(time2event_models) |>
-  mutate(dataset = factor(dataset, levels = location_order)) |>
-  arrange(dataset, next_species, first_species)
+  dplyr::mutate(dataset = factor(dataset, levels = location_order)) |>
+  dplyr::arrange(dataset, next_species, first_species) |>
+  dplyr::mutate(next_species = case_when(
+    next_species == "Martes foina" ~ "Stone marten",
+    next_species == "Felis catus" ~ "Domestic cat",
+    next_species == "Mustela putorius" ~ "European polecat",
+    next_species == "Mustela erminea" ~ "Stoat",
+    next_species == "Vulpes vulpes" ~ "Red fox",
+    TRUE ~ next_species
+  ),first_species = case_when(
+    first_species == "Martes foina" ~ "Stone marten",
+    first_species == "Felis catus" ~ "Domestic cat",
+    first_species == "Mustela putorius" ~ "European polecat",
+    first_species == "Mustela erminea" ~ "Stoat",
+    first_species == "Vulpes vulpes" ~ "Red fox",
+    TRUE ~ first_species
+  ))
 
-# Make a figure of this data
-species <- sort(unique(c(time2event_results$first_species, time2event_results$next_species)))
-
-datasets <- unique(time2event_results$dataset)
-complete_grid <- expand_grid(
+time2event_grid <- expand_grid(
   first_species = species_labels,
   next_species = species_labels,
-  dataset = datasets
+  dataset = time2event_order
 )
 
-plot_data <- complete_grid %>%
-  left_join(time2event_results, by = c("first_species", "next_species", "dataset")) %>%
-  mutate(estimate_clipped = ifelse(is.na(estimate), NA, pmax(pmin(estimate, 2), -2)))
-#png("Figures/3.Cox_hazard_tiles.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
-ggplot(plot_data, aes(x = first_species, y = next_species, fill = estimate_clipped)) +
+time2event_plotdata <- time2event_grid |>
+  left_join(time2event_results, by = c("first_species", "next_species", "dataset")) |>
+  mutate(estimate_clipped = ifelse(is.na(estimate), NA, pmax(pmin(estimate, 2), -2)),
+         dataset = factor(dataset, levels = time2event_order) )
+
+# Plotting the results ----
+png("Figures/3.Cox_hazard_tiles.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(time2event_plotdata, aes(x = first_species, y = next_species, fill = estimate_clipped)) +
   geom_tile(color = "white") +
-  geom_text(aes(label = ifelse(is.na(estimate), "", sprintf("%.2f\np=%.2f", estimate, p.value))), size = 3) +
+  geom_text(aes(label = ifelse(is.na(estimate), "", sprintf("%.2f\np=%.2f", estimate, p.value))), size = 5) +
   scale_fill_gradient2(
     low = "blue", high = "red", mid = "white", midpoint = 0,
     limits = c(-2, 2),
@@ -370,7 +379,12 @@ ggplot(plot_data, aes(x = first_species, y = next_species, fill = estimate_clipp
     x = "First Detected Species",
     y = "Next Species Detected"
   ) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(
+    axis.text.x = element_text(size = 14, angle = 45, hjust = 1),  
+    axis.text.y = element_text(size = 14),                        
+    axis.title.x = element_text(size = 16, face = "bold"),         
+    axis.title.y = element_text(size = 16, face = "bold")          
+  )
 
 dev.off()
 
