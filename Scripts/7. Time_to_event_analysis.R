@@ -74,23 +74,6 @@ ggplot(RM_time2event_data_summary, aes(x = recent_species, y = mean_gap_hours, c
     strip.text = element_text(face = "bold")
   )
 
-RM_surv <- Surv(time = RM_time2event_data$timegap_hours, event = RM_time2event_data$event)
-
-RM_km_fit <- survfit(RM_surv ~ scientificName, data = RM_time2event_data)
-
-ggsurvplot(
-  RM_km_fit,
-  data = RM_time2event_data,
-  conf.int = TRUE,
-  surv.scale = "percent",
-  xlab = "Time since species detected (hours)",
-  ylab = "Chance of not seeing a different species (%)",
-  legend.title = "Species",
-  risk.table = FALSE,
-  censor = FALSE,
-  xlim = c(0, 500),
-  ggtheme = theme_minimal()
-)
 ################### SOARREMOARRE ###################
 # Setting up the dataset correctly for SM----
 SM_time2event_data <- observations_SM23_filtered |>
@@ -230,27 +213,9 @@ ggplot(SW_time2event_data_summary, aes(x = recent_species, y = mean_gap_hours, c
     strip.text = element_text(face = "bold")
   )
 
-SW_time2event_data$facet_species <- SW_time2event_data$scientificName
-
-SW_surv <- Surv(time = SW_time2event_data$timegap_hours, event = SW_time2event_data$event)
-
-SW_km_fit <- survfit(Surv(timegap_hours, event) ~ next_species + facet_species, data = SW_time2event_data)
 
 
-ggsurvplot_facet(
-  fit = SW_km_fit,
-  data = SW_time2event_data,
-  facet.by = "scientificName",
-  conf.int = TRUE,
-  surv.scale = "percent",
-  xlab = "Time since species detected (hours)",
-  ylab = "Chance of not seeing another species (%)",
-  legend.title = "Species seen after",
-  censor = FALSE,
-  xlim = c(0, 200),
-  ggtheme = theme_minimal(),
-  palette = "Dark2"
-)
+
 
 # Cox-Hazard -----
 # Data preparation + setting up function----
@@ -363,7 +328,7 @@ time2event_plotdata <- time2event_grid |>
          dataset = factor(dataset, levels = time2event_order) )
 
 # Plotting the results ----
-png("Figures/3.Cox_hazard_tiles.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/7.Cox_hazard_tiles.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 ggplot(time2event_plotdata, aes(x = first_species, y = next_species, fill = estimate_clipped)) +
   geom_tile(color = "white") +
   geom_text(aes(label = ifelse(is.na(estimate), "", sprintf("%.2f\np=%.2f", estimate, p.value))), size = 5) +
@@ -388,3 +353,247 @@ ggplot(time2event_plotdata, aes(x = first_species, y = next_species, fill = esti
 
 dev.off()
 
+
+# Kaplan meier curves ----
+dataset_labels <- c(
+  RM24 = "Reitdiep midden",
+  SW24 = "Zuidwest Friesland",
+  SM24 = "Soarremoarre"
+)
+
+# Stone marten ----
+Marten_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
+  if (!grepl("24$", dataset_name)) return(NULL)
+  
+  df_MF <- df |> filter(scientificName == "Martes foina")
+  if (nrow(df_MF) == 0) return(NULL)
+  
+  fit <- survfit(Surv(timegap_hours, event) ~ next_species, data = df_MF)
+  
+  broom::tidy(fit) |>
+    mutate(
+      detect_prob = 1 - estimate,
+      dataset = dataset_name,
+      first_species = "Martes foina",
+      species_common = case_when(
+        strata == "next_species=Felis catus" ~ "Domestic cat",
+        strata == "next_species=Mustela erminea" ~ "Stoat",
+        strata == "next_species=Mustela putorius" ~ "European polecat",
+        strata == "next_species=Vulpes vulpes" ~ "Red fox",
+        TRUE ~ strata
+      )
+    )
+})
+
+png("Figures/7.Stone_marten_KM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(Marten_data24, aes(x = time, y = detect_prob, color = species_common)) +
+  geom_line(size = 1.2) +
+  geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
+  facet_wrap(~ dataset, labeller = labeller(dataset = dataset_labels))+
+  labs(
+    title = "Detection probability after Stone marten is detected",
+    x = "Time since Stone marten detection (hours)",
+    y = "Detection probability ",
+    color = "Next species",
+    fill = "Next species"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    strip.text = element_text(size = 16, face = "bold"),  # facet labels
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14)
+  )
+dev.off()
+# Domestic cat ----
+Cat_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
+  if (!grepl("24$", dataset_name)) return(NULL)
+  
+  df_MF <- df |> filter(scientificName == "Felis catus")
+  if (nrow(df_MF) == 0) return(NULL)
+  
+  fit <- survfit(Surv(timegap_hours, event) ~ next_species, data = df_MF)
+  
+  broom::tidy(fit) |>
+    mutate(
+      detect_prob = 1 - estimate,
+      dataset = dataset_name,
+      first_species = "Felis catus",
+      species_common = case_when(
+        strata == "next_species=Martes foina" ~ "Stone marten",
+        strata == "next_species=Mustela erminea" ~ "Stoat",
+        strata == "next_species=Mustela putorius" ~ "European polecat",
+        strata == "next_species=Vulpes vulpes" ~ "Red fox",
+        TRUE ~ strata
+      )
+    )
+})
+
+png("Figures/7.Cat_KM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(Cat_data24, aes(x = time, y = detect_prob, color = species_common)) +
+  geom_line(size = 1.2) +
+  geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
+  facet_wrap(~ dataset, labeller = labeller(dataset = dataset_labels))+
+  labs(
+    title = "Detection probability after Domestic cat is detected",
+    x = "Time since Domestic cat detection (hours)",
+    y = "Detection probability ",
+    color = "Next species",
+    fill = "Next species"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    strip.text = element_text(size = 16, face = "bold"),  # facet labels
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14)
+  )
+
+dev.off()
+# European polecat ----
+Polecat_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
+  if (!grepl("24$", dataset_name)) return(NULL)
+  
+  df_MF <- df |> filter(scientificName == "Mustela putorius")
+  if (nrow(df_MF) == 0) return(NULL)
+  
+  fit <- survfit(Surv(timegap_hours, event) ~ next_species, data = df_MF)
+  
+  broom::tidy(fit) |>
+    mutate(
+      detect_prob = 1 - estimate,
+      dataset = dataset_name,
+      first_species = "Mustela putorius",
+      species_common = case_when(
+        strata == "next_species=Felis catus" ~ "Domestic cat",
+        strata == "next_species=Mustela erminea" ~ "Stoat",
+        strata == "next_species=Martes foina" ~ "Stone marten",
+        strata == "next_species=Vulpes vulpes" ~ "Red fox",
+        TRUE ~ strata
+      )
+    )
+})
+
+png("Figures/7.Polecat_KM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(Polecat_data24, aes(x = time, y = detect_prob, color = species_common)) +
+  geom_line(size = 1.2) +
+  geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
+  facet_wrap(~ dataset, labeller = labeller(dataset = dataset_labels))+
+  labs(
+    title = "Detection probability after European polecat is detected",
+    x = "Time since European polecat detection (hours)",
+    y = "Detection probability ",
+    color = "Next species",
+    fill = "Next species"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    strip.text = element_text(size = 16, face = "bold"),  # facet labels
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14)
+  )
+
+dev.off()
+
+# Stoat ----
+Stoat_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
+  if (!grepl("24$", dataset_name)) return(NULL)
+  
+  df_MF <- df |> filter(scientificName == "Mustela erminea")
+  if (nrow(df_MF) == 0) return(NULL)
+  
+  fit <- survfit(Surv(timegap_hours, event) ~ next_species, data = df_MF)
+  
+  broom::tidy(fit) |>
+    mutate(
+      detect_prob = 1 - estimate,
+      dataset = dataset_name,
+      first_species = "Mustela erminea",
+      species_common = case_when(
+        strata == "next_species=Felis catus" ~ "Domestic cat",
+        strata == "next_species=Mustela putorius" ~ "European polecat",
+        strata == "next_species=Martes foina" ~ "Stone marten",
+        strata == "next_species=Vulpes vulpes" ~ "Red fox",
+        TRUE ~ strata
+      )
+    )
+})
+
+png("Figures/7.Stoat_KM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(Stoat_data24, aes(x = time, y = detect_prob, color = species_common)) +
+  geom_line(size = 1.2) +
+  geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
+  facet_wrap(~ dataset, labeller = labeller(dataset = dataset_labels))+
+  labs(
+    title = "Detection probability after Stoat is detected",
+    x = "Time since Stoat detection (hours)",
+    y = "Detection probability ",
+    color = "Next species",
+    fill = "Next species"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    strip.text = element_text(size = 16, face = "bold"),  # facet labels
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14)
+  )
+
+dev.off()
+
+# Red fox ----
+Fox_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
+  if (!grepl("24$", dataset_name)) return(NULL)
+  
+  df_MF <- df |> filter(scientificName == "Vulpes vulpes")
+  if (nrow(df_MF) == 0) return(NULL)
+  
+  fit <- survfit(Surv(timegap_hours, event) ~ next_species, data = df_MF)
+  
+  broom::tidy(fit) |>
+    mutate(
+      detect_prob = 1 - estimate,
+      dataset = dataset_name,
+      first_species = "Vulpes vulpes",
+      species_common = case_when(
+        strata == "next_species=Felis catus" ~ "Domestic cat",
+        strata == "next_species=Mustela putorius" ~ "European polecat",
+        strata == "next_species=Martes foina" ~ "Stone marten",
+        strata == "next_species=Mustela erminea" ~ "Stoat",
+        TRUE ~ strata
+      )
+    )
+})
+
+png("Figures/7.Fox_KM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(Fox_data24, aes(x = time, y = detect_prob, color = species_common)) +
+  geom_line(size = 1.2) +
+  geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
+  facet_wrap(~ dataset, labeller = labeller(dataset = dataset_labels))+
+  labs(
+    title = "Detection probability after Red fox is detected",
+    x = "Time since Red fox detection (hours)",
+    y = "Detection probability ",
+    color = "Next species",
+    fill = "Next species"
+  ) +
+  theme_minimal()+
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    strip.text = element_text(size = 16, face = "bold"),  # facet labels
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14)
+  )
+  
+dev.off()
