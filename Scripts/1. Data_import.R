@@ -491,4 +491,4 @@ SW_location <- SW_data |>
     fraction_Mustela_putorius = `Mustela putorius` / aantal_draaidagen,
     fraction_Vulpes_vulpes = `Vulpes vulpes` / aantal_draaidagen,
     fraction_Mustela_erminea = `Mustela erminea` / aantal_draaidagen)
-
+    
