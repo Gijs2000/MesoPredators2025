@@ -43,6 +43,11 @@ RM_time2event_120 <- RM_time2event_data |>
 RM_time2event_24 <- RM_time2event_data |>
   dplyr::filter(timegap_hours <= 24)
 
+RM_time2event_48 <- RM_time2event_data |>
+  dplyr::filter(timegap_hours <= 48)
+
+RM_time2event_168 <- RM_time2event_data |>
+  dplyr::filter(timegap_hours <= 168)
 #Plots RM----
 RM_time2event_data_summary <- RM_time2event_data |>
   group_by(focal_species = scientificName, recent_species = next_species) |>
@@ -103,6 +108,12 @@ SM_time2event_120 <- SM_time2event_data |>
 
 SM_time2event_24 <- SM_time2event_data |>
   dplyr::filter(timegap_hours <= 24)
+
+SM_time2event_48 <- SM_time2event_data |>
+  dplyr::filter(timegap_hours <= 48)
+
+SM_time2event_168 <- SM_time2event_data |>
+  dplyr::filter(timegap_hours <= 168)
 
 #Plots SM----
 SM_time2event_data_summary <- SM_time2event_data |>
@@ -182,6 +193,12 @@ SW_time2event_120 <- SW_time2event_data |>
 SW_time2event_24 <- SW_time2event_data |>
   dplyr::filter(timegap_hours <= 24)
 
+SW_time2event_48 <- SW_time2event_data |>
+  dplyr::filter(timegap_hours <= 48)
+
+SW_time2event_168 <- SW_time2event_data |>
+  dplyr::filter(timegap_hours <= 168)
+
 #Plots SW----
 SW_time2event_data_summary <- SW_time2event_data |>
   group_by(focal_species = scientificName, recent_species = next_species) |>
@@ -223,18 +240,24 @@ time2event_alldata <- list(
   RM60 = RM_time2event_60,
   RM120 = RM_time2event_120,
   RM24 = RM_time2event_24,
+  RM48 = RM_time2event_48,
+  RM168 = RM_time2event_168,
   SM60 = SM_time2event_60,
   SM120 = SM_time2event_120,
-  SM24 = SM_time2event_24,  
+  SM24 = SM_time2event_24,
+  SM48 = SM_time2event_48,
+  SM168 = SM_time2event_168,
   SW60 = SW_time2event_60,
   SW120 = SW_time2event_120,
-  SW24 = SW_time2event_24
+  SW24 = SW_time2event_24,
+  SW48 = SW_time2event_48,
+  SW168 = SW_time2event_168
 )
 
-time2event_order <- c("RM60", "RM120", "RM24",
-                      "SW60", "SW120", "SW24",
-                      "SM60", "SM120", "SM24"
-)
+location_order <- c("RM60", "RM120", "RM24", "RM48", "RM168",
+                      "SW60", "SW120", "SW24", "SW48", "SW168",
+                      "SM60", "SM120", "SM24", "SM48", "SM168")
+
 fit_pairwise_models <- function(df, dataset_name = "unknown", add_frailty = FALSE) {
   cat("\n=== Processing dataset:", dataset_name, "===\n")
   print(summary(df))
@@ -295,6 +318,46 @@ fit_pairwise_models <- function(df, dataset_name = "unknown", add_frailty = FALS
   bind_rows(results)
 }
 
+# Taking locations together ----
+all_time2event_60 <- bind_rows(
+  RM_time2event_60,
+  SM_time2event_60,
+  SW_time2event_60
+)
+
+all_time2event_120 <- bind_rows(
+  RM_time2event_120,
+  SM_time2event_120,
+  SW_time2event_120
+)
+
+all_time2event_24 <- bind_rows(
+  RM_time2event_24,
+  SM_time2event_24,
+  SW_time2event_24
+)
+
+all_time2event_48 <- bind_rows(
+  RM_time2event_48,
+  SM_time2event_48,
+  SW_time2event_48
+)
+
+all_time2event_168 <- bind_rows(
+  RM_time2event_168,
+  SM_time2event_168,
+  SW_time2event_168
+)
+
+
+time2event_combidata <- list(
+  "60 minutes" = all_time2event_60,
+  "120 minutes" = all_time2event_120,
+  "24 hours" = all_time2event_24,
+  "48 hours" = all_time2event_48,
+  "7 days" = all_time2event_168
+)
+
 # Run the function over all data + making grid for plotting ----
 time2event_models <- purrr::imap(time2event_alldata, ~ fit_pairwise_models(.x, dataset_name = .y))
 time2event_results <- bind_rows(time2event_models) |>
@@ -324,11 +387,14 @@ time2event_grid <- expand_grid(
 
 time2event_plotdata <- time2event_grid |>
   left_join(time2event_results, by = c("first_species", "next_species", "dataset")) |>
-  mutate(estimate_clipped = ifelse(is.na(estimate), NA, pmax(pmin(estimate, 2), -2)),
-         dataset = factor(dataset, levels = time2event_order) )
+  dplyr::mutate(estimate_clipped = ifelse(is.na(estimate), NA, pmax(pmin(estimate, 2), -2)),
+         dataset = factor(dataset, levels = time2event_order) ) |>
+  dplyr::filter(dataset %in% c("RM24", "RM48", "RM168",
+                         "SM24", "SM48", "SM168",
+                         "SW24", "SW48", "SW168"))
 
 # Plotting the results ----
-#png("Figures/7.Cox_hazard_tiles.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/7.Cox_hazard_tiles_longertimes.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 ggplot(time2event_plotdata, aes(x = first_species, y = next_species, fill = estimate_clipped)) +
   geom_tile(color = "white") +
   geom_text(aes(label = ifelse(is.na(estimate), "", sprintf("%.2f\np=%.2f", estimate, p.value))), size = 5) +
@@ -354,6 +420,79 @@ ggplot(time2event_plotdata, aes(x = first_species, y = next_species, fill = esti
 dev.off()
 
 
+# Run the function over combination data + making grid for plotting ----
+time2event_models_combi <- purrr::imap(
+  time2event_combidata,
+  ~ fit_pairwise_models(.x, dataset_name = .y)  # dataset_name = time window (as string)
+)
+
+time2event_results_combi <- bind_rows(time2event_models_combi) |>
+  dplyr::mutate(time_window = factor(dataset, levels = c("60 minutes", "120 minutes", "24 hours", "48 hours", "7 days"))) |>
+  dplyr::mutate(
+    next_species = case_when(
+      next_species == "Martes foina" ~ "Stone marten",
+      next_species == "Felis catus" ~ "Domestic cat",
+      next_species == "Mustela putorius" ~ "European polecat",
+      next_species == "Mustela erminea" ~ "Stoat",
+      next_species == "Vulpes vulpes" ~ "Red fox",
+      TRUE ~ next_species
+    ),
+    first_species = case_when(
+      first_species == "Martes foina" ~ "Stone marten",
+      first_species == "Felis catus" ~ "Domestic cat",
+      first_species == "Mustela putorius" ~ "European polecat",
+      first_species == "Mustela erminea" ~ "Stoat",
+      first_species == "Vulpes vulpes" ~ "Red fox",
+      TRUE ~ first_species
+    )
+  )
+
+time2event_order_combi  <- c("60 minutes", "120 minutes", "24 hours", "48 hours", "7 days")
+
+time2event_grid_combi <- expand_grid(
+  first_species = species_labels,
+  next_species = species_labels,
+  time_window = time2event_order_combi
+)
+
+time2event_plotdata_combi <- time2event_grid_combi |>
+  left_join(time2event_results_combi, by = c("first_species", "next_species", "time_window")) |>
+  dplyr::mutate(
+    estimate_clipped = ifelse(is.na(estimate), NA, pmax(pmin(estimate, 2), -2)),
+    time_window = factor(time_window, levels = time2event_order_combi)
+  ) |>
+  mutate(estimate_clipped = as.numeric(estimate_clipped))
+
+
+# Plotting the results of combined data----
+#png("Figures/7.Cox_hazard_tiles_combined.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(time2event_plotdata_combi, aes(x = first_species, y = next_species, fill = estimate_clipped)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = ifelse(is.na(estimate), "", sprintf("%.2f\np=%.2f", estimate, p.value))), size = 5) +
+  scale_fill_gradient2(
+    low = "blue", mid = "white", high = "red", midpoint = 0,
+    limits = c(-2, 2),
+    name = "Hazard\nestimate",
+    na.value = "black"
+  ) +
+  facet_wrap(~ time_window, labeller = label_both) +  # <- key change: facet by time_window
+  labs(
+    title = "Species Avoidance/Attraction by Time Window",
+    subtitle = "Cox Proportional Hazards Estimates (clipped to ±2)",
+    x = "First Detected Species",
+    y = "Next Species Detected"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank(),
+    strip.text = element_text(face = "bold")
+  )
+
+
+dev.off()
+
+
 # Kaplan meier curves ----
 dataset_labels <- c(
   RM24 = "Reitdiep midden",
@@ -363,7 +502,7 @@ dataset_labels <- c(
 
 # Stone marten ----
 Marten_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
-  if (!grepl("24$", dataset_name)) return(NULL)
+  if (!grepl("48$", dataset_name)) return(NULL)
   
   df_MF <- df |> filter(scientificName == "Martes foina")
   if (nrow(df_MF) == 0) return(NULL)
@@ -385,7 +524,7 @@ Marten_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
     )
 })
 
-png("Figures/7.Stone_marten_KM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/7.Stone_marten_KM_48.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 ggplot(Marten_data24, aes(x = time, y = detect_prob, color = species_common)) +
   geom_line(size = 1.2) +
   geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
@@ -407,9 +546,10 @@ ggplot(Marten_data24, aes(x = time, y = detect_prob, color = species_common)) +
     legend.text = element_text(size = 14)
   )
 dev.off()
+
 # Domestic cat ----
 Cat_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
-  if (!grepl("24$", dataset_name)) return(NULL)
+  if (!grepl("48$", dataset_name)) return(NULL)
   
   df_MF <- df |> filter(scientificName == "Felis catus")
   if (nrow(df_MF) == 0) return(NULL)
@@ -431,7 +571,7 @@ Cat_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
     )
 })
 
-png("Figures/7.Cat_KM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/7.Cat_KM_48.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 ggplot(Cat_data24, aes(x = time, y = detect_prob, color = species_common)) +
   geom_line(size = 1.2) +
   geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
@@ -456,7 +596,7 @@ ggplot(Cat_data24, aes(x = time, y = detect_prob, color = species_common)) +
 dev.off()
 # European polecat ----
 Polecat_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
-  if (!grepl("24$", dataset_name)) return(NULL)
+  if (!grepl("48$", dataset_name)) return(NULL)
   
   df_MF <- df |> filter(scientificName == "Mustela putorius")
   if (nrow(df_MF) == 0) return(NULL)
@@ -478,7 +618,7 @@ Polecat_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) 
     )
 })
 
-png("Figures/7.Polecat_KM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/7.Polecat_KM_48.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 ggplot(Polecat_data24, aes(x = time, y = detect_prob, color = species_common)) +
   geom_line(size = 1.2) +
   geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
@@ -504,7 +644,7 @@ dev.off()
 
 # Stoat ----
 Stoat_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
-  if (!grepl("24$", dataset_name)) return(NULL)
+  if (!grepl("48$", dataset_name)) return(NULL)
   
   df_MF <- df |> filter(scientificName == "Mustela erminea")
   if (nrow(df_MF) == 0) return(NULL)
@@ -526,7 +666,7 @@ Stoat_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
     )
 })
 
-png("Figures/7.Stoat_KM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+#png("Figures/7.Stoat_KM_48.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 ggplot(Stoat_data24, aes(x = time, y = detect_prob, color = species_common)) +
   geom_line(size = 1.2) +
   geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
@@ -552,7 +692,7 @@ dev.off()
 
 # Red fox ----
 Fox_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
-  if (!grepl("24$", dataset_name)) return(NULL)
+  if (!grepl("48$", dataset_name)) return(NULL)
   
   df_MF <- df |> filter(scientificName == "Vulpes vulpes")
   if (nrow(df_MF) == 0) return(NULL)
@@ -574,7 +714,7 @@ Fox_data24 <-purrr::imap_dfr(time2event_alldata, function(df, dataset_name) {
     )
 })
 
-png("Figures/7.Fox_KM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+png("Figures/7.Fox_KM_48.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 ggplot(Fox_data24, aes(x = time, y = detect_prob, color = species_common)) +
   geom_line(size = 1.2) +
   geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
@@ -596,4 +736,111 @@ ggplot(Fox_data24, aes(x = time, y = detect_prob, color = species_common)) +
     legend.text = element_text(size = 14)
   )
   
+dev.off()
+
+
+# Kaplan meier curves combined----
+make_km_data_combined <- function(df_list, focal_species) {
+  purrr::imap_dfr(df_list, function(df, time_window) {
+    df_focal <- df |> filter(scientificName == focal_species)
+    if (nrow(df_focal) == 0) return(NULL)
+    
+    fit <- survfit(Surv(timegap_hours, event) ~ next_species, data = df_focal)
+    
+    broom::tidy(fit) |>
+      mutate(
+        detect_prob = 1 - estimate,
+        time_window = time_window,
+        first_species = focal_species,
+        species_common = case_when(
+          strata == "next_species=Felis catus" ~ "Domestic cat",
+          strata == "next_species=Mustela erminea" ~ "Stoat",
+          strata == "next_species=Mustela putorius" ~ "European polecat",
+          strata == "next_species=Vulpes vulpes" ~ "Red fox",
+          strata == "next_species=Martes foina" ~ "Stone marten",
+          TRUE ~ gsub("next_species=", "", strata)
+        )
+      )
+  })
+}
+
+#Stone marten ----
+KM_Marten_combined <- make_km_data_combined(time2event_combidata, "Martes foina") |>
+  mutate(time_window = factor(time_window, levels = time2event_order_combi))
+
+png("Figures/7.Marten_KM_Combi.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(KM_Marten_combined, aes(x = time, y = detect_prob, color = species_common)) +
+  geom_line(size = 1.2) +
+  geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
+  facet_wrap(~ time_window, labeller = label_both, scales = 'free') +
+  labs(
+    title = "Detection probability after Stone marten is detected",
+    x = "Time since Stone marten detection",
+    y = "Detection probability",
+    color = "Next species",
+    fill = "Next species"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    strip.text = element_text(size = 16, face = "bold"),
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14)
+  )
+dev.off()
+
+# Domestic cat ----
+KM_Cat_combined <- make_km_data_combined(time2event_combidata, "Felis catus") |>
+  mutate(time_window = factor(time_window, levels = time2event_order_combi))
+
+png("Figures/7.Cat_KM_Combi.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(KM_Cat_combined, aes(x = time, y = detect_prob, color = species_common)) +
+  geom_line(size = 1.2) +
+  geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
+  facet_wrap(~ time_window, labeller = label_both, scales = 'free') +
+  labs(
+    title = "Detection probability after Domestic cat is detected",
+    x = "Time since Domestic cat detection",
+    y = "Detection probability",
+    color = "Next species",
+    fill = "Next species"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    strip.text = element_text(size = 16, face = "bold"),
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14)
+  )
+dev.off()
+
+# Domestic cat ----
+KM_Cat_combined <- make_km_data_combined(time2event_combidata, "Felis catus") |>
+  mutate(time_window = factor(time_window, levels = time2event_order_combi))
+
+png("Figures/7.Cat_KM_Combi.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+ggplot(KM_Cat_combined, aes(x = time, y = detect_prob, color = species_common)) +
+  geom_line(size = 1.2) +
+  geom_ribbon(aes(ymin = 1 - conf.high, ymax = 1 - conf.low, fill = species_common), alpha = 0.2, color = NA) +
+  facet_wrap(~ time_window, labeller = label_both, scales = 'free') +
+  labs(
+    title = "Detection probability after Domestic cat is detected",
+    x = "Time since Domestic cat detection",
+    y = "Detection probability",
+    color = "Next species",
+    fill = "Next species"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(size = 18, face = "bold"),
+    axis.title = element_text(size = 16),
+    axis.text = element_text(size = 14),
+    strip.text = element_text(size = 16, face = "bold"),
+    legend.title = element_text(size = 16),
+    legend.text = element_text(size = 14)
+  )
 dev.off()
