@@ -38,17 +38,20 @@ colnames(res_SM) <- rownames(res_SM) <- species_labels
 
 p.mat_SM <- cor.mtest(SM_cor_df, method = "kendall")
 colnames(p.mat_SM) <- rownames(p.mat_SM) <- species_labels
+res_SM <- res_SM[!rownames(res_SM) %in% "Red fox", !colnames(res_SM) %in% "Red fox"]
 
-#png("Figures/3.Correlation_matrix_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+png("Figures/3.Correlation_matrix_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 corrplot(res_SM, 
          type = "upper", 
          order = "alphabet", 
          p.mat = p.mat_SM, 
          sig.level = 0.05,
          tl.col = "black",
-         tl.cex = 0.9,
+         tl.cex = 2.0,
          title = "Correlation Between Species in the Soarremoarre area (2023)",
-         mar = c(0, 0, 2, 0))
+         mar = c(0, 0, 2, 0),
+         cex.main = 2,
+         cl.cex =  2)
 dev.off()
 
 # Correlation matrix RM ----
@@ -65,16 +68,19 @@ colnames(res_RM) <- rownames(res_RM) <- species_labels
 p.mat_RM <- cor.mtest(RM_cor_df, method = "kendall")
 colnames(p.mat_RM) <- rownames(p.mat_RM) <- species_labels
 
-#png("Figures/3.Correlation_matrix_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+res_RM <- res_RM[!rownames(res_RM) %in% "Stoat", !colnames(res_RM) %in% "Stoat"]
+png("Figures/3.Correlation_matrix_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 corrplot(res_RM, 
          type = "upper", 
          order = "alphabet", 
          p.mat = p.mat_RM, 
          sig.level = 0.05,
          tl.col = "black",
-         tl.cex = 0.9,
+         tl.cex = 2,
          title = "Correlation Between Species in the Reitdiep midden area (2023)",
-         mar = c(0, 0, 2, 0))
+         mar = c(0, 0, 2, 0),
+         cex.main = 2,
+         cl.cex =  2)
 dev.off()
 
 # Correlation matrix SW ----

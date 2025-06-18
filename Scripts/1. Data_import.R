@@ -16,7 +16,7 @@ SW_import <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vQCffd_hF
   dplyr::mutate(study_date = mdy(study_date),
                 eventStart = with_tz(ymd_hms(eventStart), tzone = "Europe/Amsterdam"),
                 eventEnd = with_tz(ymd_hms(eventEnd), tzone = "Europe/Amsterdam"))
-str(SW_data)
+str(SW_import)
 
 SW_days <- read_csv("https://docs.google.com/spreadsheets/d/e/2PACX-1vRqlA9LM5RvZYJfEx1jwHHQCAv84KPK0ne489TbqIinxUzZdrYIfzprowALSMPsYg/pub?gid=2023298486&single=true&output=csv")
 str(SW_days)
