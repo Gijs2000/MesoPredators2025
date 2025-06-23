@@ -35,13 +35,13 @@ densityPlot(RM_Stoat.r, rug=TRUE, xcenter="midnight")
 
 #Combining Species in one graph
 png("Figures/2.Animal_activity_RM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
-densityPlot(RM_Marten.r,lwd=5, rug=TRUE, col='#00C49A', xcenter="m", main = NULL)
+densityPlot(RM_Marten.r,lwd=5, rug=TRUE, col='#00C49A', xcenter="m", main = NULL, cex.axis = 2.5, cex.lab = 2)
 densityPlot(RM_Polecat.r, add=TRUE ,lwd=5, xcenter = "m",col = "#FB8F67", rug = TRUE, main = NULL )
 densityPlot(RM_Fox.r, add=TRUE, lwd=5, rug=TRUE, col='#F8E16C', xcenter="m" )
 densityPlot(RM_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='#FFC2B4', xcenter="m")
 
 
-legend("topleft", c("Polecat", "Fox", "Marten", "Cat"), col=c("#FB8F67", "#F8E16C", "#00C49A", "#FFC2B4"), lty = 1, lwd = 5, cex = 2)
+legend("topleft", c("Polecat", "Fox", "Marten", "Cat"), col=c("#FB8F67", "#F8E16C", "#00C49A", "#FFC2B4"), lty = 1, lwd = 5, cex = 3)
 title("Density plot of activity patterns of different species in the Reitdiep Midden area (2023)", cex.main=2.0)
 dev.off()
 
@@ -69,15 +69,15 @@ densityPlot(SW_Stoat.r, rug=TRUE, xcenter="midnight")
 
 
 #Combining Species in one graph
-#png("Figures/2.Animal_activity_SW.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
-densityPlot(SW_Marten.r, lwd=5, rug=TRUE, col= "#00C49A" ,xcenter="m", main = NULL)
+png("Figures/2.Animal_activity_SW.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+densityPlot(SW_Marten.r, lwd=5, rug=TRUE, col= "#00C49A" ,xcenter="m", main = NULL, cex.axis = 2.5, cex.lab = 2)
 densityPlot(SW_Fox.r,  add=TRUE, lwd=5, rug=TRUE, col='#F8E16C', xcenter="m", main = NULL)
 densityPlot(SW_Polecat.r, extend=NULL, lwd=5, xcenter = "m",col = "#FB8F67", rug = TRUE, add = TRUE )
 densityPlot(SW_Stoat.r, add=TRUE, lwd=5, rug=TRUE,col='#156064', xcenter="m" )
 densityPlot(SW_Cat.r, add=TRUE, lwd=5, rug=TRUE, col='#FFC2B4', xcenter="m")
 
 
-legend("topleft", c("Polecat", "Fox", "Marten", "Cat", "Stoat"), col=c("#FB8F67", "#F8E16C", "#00C49A", "#FFC2B4", "#156064"), lty = 1, lwd = 5, cex = 2)
+legend("topleft", c("Polecat", "Fox", "Marten", "Cat", "Stoat"), col=c("#FB8F67", "#F8E16C", "#00C49A", "#FFC2B4", "#156064"), lty = 1, lwd = 5, cex = 3)
 title("Density plot of activity patterns of different species in the Southwest Friesland area (2023)", cex.main=2.0)
 dev.off()
 
@@ -108,14 +108,14 @@ densityPlot(SM_Stoat.r, rug=TRUE, xcenter="midnight")
 
 #Combining Species in one graph
 
-#png("Figures/2.Animal_activity_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+png("Figures/2.Animal_activity_SM.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 # First, plot the densities WITHOUT rug
-densityPlot(SM_Polecat.r, lwd=5, rug=TRUE, col="#FB8F67", xcenter="m", main=NULL)
+densityPlot(SM_Polecat.r, lwd=5, rug=TRUE, col="#FB8F67", xcenter="m", main=NULL, cex.lab = 2, cex.axis = 2.5)
 densityPlot(SM_Marten.r, lwd=5, rug=TRUE, add=TRUE, col="#00C49A", xcenter="m")
 densityPlot(SM_Stoat.r, lwd=5, rug=TRUE, add=TRUE, col="#156064", xcenter="m")
 densityPlot(SM_Cat.r, lwd=5, rug=TRUE, add=TRUE, col="#FFC2B4", xcenter="m")
 
-legend("topleft", c("Polecat", "Marten", "Cat", "Stoat"), col=c("#FB8F67", "#00C49A", "#FFC2B4", "#156064"), lty = 1, lwd = 5, cex = 2)
+legend("topleft", c("Polecat", "Marten", "Cat", "Stoat"), col=c("#FB8F67", "#00C49A", "#FFC2B4", "#156064"), lty = 1, lwd = 5, cex = 3)
 title("Density plot of activity patterns of different species in the Soarremoarre area (2023)", cex.main=2.0)
 dev.off()
 
