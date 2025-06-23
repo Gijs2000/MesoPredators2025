@@ -807,14 +807,13 @@ ggplot(KM_Cat_combined, aes(x = time, y = detect_prob, color = species_common)) 
     color = "Next species",
     fill = "Next species"
   ) +
-  theme_minimal(base_size = 14) +
   theme(
-    plot.title = element_text(size = 18, face = "bold"),
-    axis.title = element_text(size = 16),
-    axis.text = element_text(size = 14),
-    strip.text = element_text(size = 16, face = "bold"),
-    legend.title = element_text(size = 16),
-    legend.text = element_text(size = 14)
+    plot.title = element_text(size = 22, face = "bold"),
+    axis.title = element_text(size = 22),
+    axis.text = element_text(size = 22),
+    strip.text = element_text(size = 22, face = "bold"),
+    legend.title = element_text(size = 22),
+    legend.text = element_text(size = 22)
   )
 dev.off()
 
