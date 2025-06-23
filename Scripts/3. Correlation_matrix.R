@@ -97,14 +97,46 @@ colnames(res_SW) <- rownames(res_SW) <- species_labels
 p.mat_SW <- cor.mtest(SW_cor_df, method = "kendall")
 colnames(p.mat_SW) <- rownames(p.mat_SW) <- species_labels
 
-#png("Figures/3.Correlation_matrix_SW.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+png("Figures/3.Correlation_matrix_SW.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
 corrplot(res_SW, 
          type = "upper", 
          order = "alphabet", 
          p.mat = p.mat_RM, 
          sig.level = 0.05,
          tl.col = "black",
-         tl.cex = 0.9,
+         tl.cex = 2,
          title = "Correlation Between Species in the South-West area (2023)",
-         mar = c(0, 0, 2, 0))
+         mar = c(0, 0, 2, 0),
+         cex.main = 2,
+         cl.cex =  2)
+dev.off()
+
+# Correlation matrix everything ----
+all_location <- rbind(SM_location, RM_location,SW_location)
+
+combi_cor_df <- all_location |>
+  dplyr::select(fraction_Felis_catus, 
+                fraction_Martes_foina,
+                fraction_Mustela_putorius,
+                fraction_Vulpes_vulpes,
+                fraction_Mustela_erminea)
+
+res_combi <- cor(combi_cor_df)
+colnames(res_combi) <- rownames(res_combi) <- species_labels
+
+p.mat_combi <- cor.mtest(combi_cor_df, method = "kendall")
+colnames(p.mat_combi) <- rownames(p.mat_combi) <- species_labels
+
+png("Figures/3.Correlation_matrix_combi.png", width = 1920, height = 1080) #TURN ON WHEN SAVING
+corrplot(res_combi, 
+         type = "upper", 
+         order = "alphabet", 
+         p.mat = p.mat_RM, 
+         sig.level = 0.05,
+         tl.col = "black",
+         tl.cex = 2,
+         title = "Correlation Between Species in the three areas combined (2023)",
+         mar = c(0, 0, 2, 0),
+         cex.main = 2,
+         cl.cex =  2)
 dev.off()
